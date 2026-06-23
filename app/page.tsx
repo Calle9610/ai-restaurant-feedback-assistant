@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getOverviewStats } from '@/lib/data';
+import { getTheme } from '@/lib/restaurantConfig';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import WeeklyReportSection from './WeeklyReportSection';
@@ -16,60 +17,59 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-zinc-50">
-      <header className="bg-white border-b border-zinc-200 px-8 py-4">
-        <div className="flex items-center justify-between">
+      <header className="bg-white border-b border-zinc-200 px-6 py-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold tracking-tight">Gästpuls</h1>
-            <Badge variant="secondary">Demo</Badge>
+            <span className="text-xl font-bold tracking-tight">Gästpuls</span>
+            <Badge variant="secondary" className="text-xs">Demo</Badge>
           </div>
           <nav className="flex gap-1">
-            <Link href="/" className="px-3 py-1.5 text-sm rounded-md bg-zinc-100 text-zinc-900 font-medium">Översikt</Link>
-            <Link href="/insights" className="px-3 py-1.5 text-sm rounded-md text-zinc-500 hover:text-zinc-700 transition-colors">Insikter</Link>
+            <Link href="/" className="px-3 py-1.5 text-sm rounded-md bg-zinc-900 text-white font-medium">Översikt</Link>
+            <Link href="/insights" className="px-3 py-1.5 text-sm rounded-md text-zinc-500 hover:text-zinc-800 transition-colors">Insikter</Link>
           </nav>
         </div>
-        <p className="text-sm text-zinc-500 mt-2">
-          Gästfeedback omvandlad till konkret handling – per restaurang, varje vecka
-        </p>
       </header>
 
-      <main className="max-w-5xl mx-auto px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-sm font-medium text-zinc-500 uppercase tracking-wide">Restauranger</h2>
-          <span className="text-sm text-zinc-400">{totalReviews} omdömen totalt</span>
+      <main className="max-w-5xl mx-auto px-6 py-8">
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-sm text-zinc-500">
+            Gästfeedback omvandlad till konkret handling – per restaurang, varje vecka
+          </p>
+          <span className="text-xs text-zinc-400 shrink-0 ml-4">{totalReviews} omdömen</span>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {restaurants.map((r) => {
+            const theme = getTheme(r.name);
             const total = r.sentiment.positive + r.sentiment.neutral + r.sentiment.negative || 1;
             return (
               <Link key={r.id} href={`/restaurant/${r.id}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                  <CardHeader className="pb-3">
+                <Card
+                  className="hover:shadow-md transition-all cursor-pointer h-full overflow-hidden"
+                  style={{ borderLeftWidth: 4, borderLeftColor: theme.accent }}
+                >
+                  <CardHeader className="pb-3 pt-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <CardTitle className="text-base">{r.name}</CardTitle>
+                        <CardTitle className="text-base" style={{ color: theme.text }}>{r.name}</CardTitle>
                         <p className="text-xs text-zinc-400 mt-0.5">{r.area}</p>
                       </div>
-                      <span className={`text-sm font-semibold shrink-0 ${trendColor[r.trend]}`} title={trendLabel[r.trend]}>
-                        {trendIcon[r.trend]}{' '}
-                        {r.trendDiff !== 0 && Math.abs(r.trendDiff) > 0.05
-                          ? Math.abs(r.trendDiff).toFixed(1)
-                          : ''}
+                      <span className={`text-sm font-bold shrink-0 ${trendColor[r.trend]}`} title={trendLabel[r.trend]}>
+                        {trendIcon[r.trend]}
+                        {Math.abs(r.trendDiff) > 0.05 ? ` ${Math.abs(r.trendDiff).toFixed(1)}` : ''}
                       </span>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-baseline gap-2 mb-4">
+                    <div className="flex items-baseline gap-1.5 mb-4">
                       <span className="text-3xl font-bold">{r.avgRating.toFixed(1)}</span>
                       <span className="text-sm text-zinc-400">/ 5</span>
                       <span className="text-xs text-zinc-400 ml-auto">{r.totalReviews} omdömen</span>
                     </div>
-
-                    {/* Sentiment bar */}
                     <div className="flex h-1.5 rounded-full overflow-hidden gap-px mb-2">
-                      <div className="bg-green-400 transition-all" style={{ width: `${(r.sentiment.positive / total) * 100}%` }} />
-                      <div className="bg-amber-300 transition-all" style={{ width: `${(r.sentiment.neutral / total) * 100}%` }} />
-                      <div className="bg-red-400 transition-all" style={{ width: `${(r.sentiment.negative / total) * 100}%` }} />
+                      <div className="bg-green-400" style={{ width: `${(r.sentiment.positive / total) * 100}%` }} />
+                      <div className="bg-amber-300" style={{ width: `${(r.sentiment.neutral / total) * 100}%` }} />
+                      <div className="bg-red-400"   style={{ width: `${(r.sentiment.negative / total) * 100}%` }} />
                     </div>
                     <div className="flex gap-3 text-xs">
                       <span className="text-green-600">↑ {r.sentiment.positive}</span>
