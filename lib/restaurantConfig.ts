@@ -6,11 +6,11 @@ export type RestaurantTheme = {
 };
 
 const themes: Record<string, RestaurantTheme> = {
-  'Tennstopet':       { accent: '#B45309', bg: '#FFFBEB', border: '#FCD34D', text: '#92400E' },
-  'Kommendören':      { accent: '#1D4ED8', bg: '#EFF6FF', border: '#93C5FD', text: '#1E3A8A' },
-  'Tako':             { accent: '#0F766E', bg: '#F0FDFA', border: '#5EEAD4', text: '#134E4A' },
-  'Tennstopet Grill': { accent: '#C2410C', bg: '#FFF7ED', border: '#FDBA74', text: '#9A3412' },
-  'Kapten Jack':      { accent: '#0369A1', bg: '#F0F9FF', border: '#7DD3FC', text: '#0C4A6E' },
+  'Tennstopet':       { accent: '#E16241', bg: '#FEF0EB', border: '#F0A48D', text: '#7A2D12' },
+  'Kommendören':      { accent: '#A20000', bg: '#FFF0F0', border: '#D97070', text: '#6B0000' },
+  'Tako':             { accent: '#000000', bg: '#F5F5F5', border: '#A1A1AA', text: '#18181B' },
+  'Tennstopet Grill': { accent: '#DF5327', bg: '#FDEEE7', border: '#ED9475', text: '#78260E' },
+  'Kapten Jack':      { accent: '#0F5250', bg: '#EDFAFA', border: '#5DA6A4', text: '#073533' },
 };
 
 const fallback: RestaurantTheme = { accent: '#6B7280', bg: '#F9FAFB', border: '#D1D5DB', text: '#374151' };
