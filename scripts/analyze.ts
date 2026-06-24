@@ -60,7 +60,11 @@ async function analyzeBatch(
   const toolUse = response.content.find((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
   if (!toolUse) throw new Error('Inget tool_use-svar från Claude');
 
-  return (toolUse.input as { analyses: Analysis[] }).analyses;
+  const input = toolUse.input as { analyses?: Analysis[] };
+  if (!Array.isArray(input.analyses)) {
+    throw new Error(`Oväntat svar-format: ${JSON.stringify(toolUse.input).slice(0, 200)}`);
+  }
+  return input.analyses;
 }
 
 async function main() {
@@ -88,9 +92,18 @@ async function main() {
     const n = Math.floor(i / BATCH_SIZE) + 1;
     process.stdout.write(`  Batch ${n}/${total} (${batch.length} st)… `);
 
-    const analyses = await analyzeBatch(batch);
+    let analyses: Analysis[] | null = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        analyses = await analyzeBatch(batch);
+        break;
+      } catch (err) {
+        if (attempt === 3) throw err;
+        process.stdout.write(`(retry ${attempt})… `);
+      }
+    }
 
-    const rows = analyses.map((a) => ({
+    const rows = analyses!.map((a) => ({
       review_id:        batch[a.review_index].id,
       sentiment:        a.sentiment,
       category:         a.category,

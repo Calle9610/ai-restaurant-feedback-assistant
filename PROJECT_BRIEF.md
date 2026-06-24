@@ -9,7 +9,7 @@
 
 ## 1. Varför detta projekt finns
 
-Carl intervjuar för en **Tech Lead-roll på Stockholm Krogbolag** (restaurangkoncern bakom bl.a. Tennstopet, Kommendören, Tako och boknings-/betalappen **Maîtres**). Rekryteraren har indikerat att bolaget **inte har någon in-house** som driver tech/AI idag, att appen underhålls av en **extern konsultbyrå**, och att fokus ligger på att **få den interna organisationen att jobba smartare med AI och automation**.
+Carl intervjuar för en **Tech Lead-roll på Stockholm Krogbolag** (restaurangkoncern bakom bl.a. Tennstopet, Tennstopet Grill, Kommendören, Tako, Kapten Jack och boknings-/betalappen **Maîtres**). Rekryteraren har indikerat att bolaget **inte har någon in-house** som driver tech/AI idag, att appen underhålls av en **extern konsultbyrå**, och att fokus ligger på att **få den interna organisationen att jobba smartare med AI och automation**.
 
 Syftet med detta projekt är **inte** att bygga en färdig produkt. Det är att, på några dagar och med små resurser, producera en **liten, körbar demo** som bevisar:
 
@@ -32,6 +32,15 @@ Ett **internt chefsverktyg** som tar gästfeedback och gör om den till **konkre
 - **Ingen auth, ingen multi-tenant, ingen RAG-infra** i grundscopet. Single-purpose demo.
 - **Undvik överengineering.** Inga köer, ingen microservice-arkitektur, ingen egen VPS. Vercel + Supabase räcker.
 - AI-analysen **förberäknas** på seed-datan och sparas i databasen, så demon är blixtsnabb. Vi lämnar **en** live-knapp (analysera nytt omdöme / generera veckorapport) så de ser att det är riktig AI, inte attrapp.
+
+## 3b. Datakvalitetsprinciper
+
+Den syntetiska datan ska kännas operativt trovärdig för någon som arbetar med dessa restauranger dagligen. Det innebär:
+
+- **Varje restaurang har en distinkt profil.** En kämpar med ett specifikt problem (t.ex. väntetider, pris), en annan visar tydlig uppåtgång. Ingen restaurang är "genomsnittlig på allt".
+- **Realistisk betygsfördelning.** Enstaka 2:or och 3:or mitt i perioder av höga betyg – inte en jämn kurva. Snittbetyg på 3.8–4.3 beroende på restaurang.
+- **Specifika, agerbara kommentarer.** Inte "maten var god" utan "Pulled pork-burgaren på Captain Jack var torr och brödet smulade sönder – tre gäster V23 nämner samma rätt". Det är den nivån som gör att krogchefen kan agera direkt.
+- **Svenska kommentarer** med naturlig variation i ton och längd.
 
 ## 4. Teknikstack
 
