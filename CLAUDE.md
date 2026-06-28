@@ -103,12 +103,14 @@ Claude Code agerar som en **senior men pedagogisk** kodpartner. För varje steg:
 
 Funktionaliteten (dag 1–3) är klar och demad. Målet framåt är att höja den visuella kvaliteten till "färdig produkt"-nivå. Två design-skills används med **OLIKA roller** – de ska inte konkurrera:
 
-- **ui-ux-pro-max** (`.claude/skills/ui-ux-pro-max/`): körs **EN gång** för att generera ett design system anpassat för en intern B2B analytics-dashboard. Resultatet persisteras till `design-system/MASTER.md` = källa till sanning för alla visuella beslut (färg, typografi, stil).
+- **ui-ux-pro-max** (`.claude/skills/ui-ux-pro-max/`): körs **EN gång** för att generera ett design system anpassat för en intern B2B analytics-dashboard. Resultatet persisteras till `design-system/gästpuls/MASTER.md` = källa till sanning för alla visuella beslut (färg, typografi, stil).
 - **frontend-design** (inbyggd): används **löpande** vid varje komponentändring för hantverket – spacing, hierarki, states, tillgänglighet.
 
-**Ordning:** läs `design-system/MASTER.md` först (tokens vinner), läs sedan frontend-design för utförandet. Generera **ALDRIG** om design-systemet mitt i arbetet – justera `MASTER.md` medvetet om något ska ändras.
+**Ordning:** läs `design-system/gästpuls/MASTER.md` först (tokens vinner), läs sedan frontend-design för utförandet. Generera **ALDRIG** om design-systemet mitt i arbetet – justera `MASTER.md` medvetet om något ska ändras.
 
-**Stack-tvång:** all UI är Next.js (App Router) + TypeScript + Tailwind + shadcn/ui. Skillens default till HTML+Tailwind gäller **INTE** här.
+**Stack-tvång:** all UI är Next.js (App Router) + TypeScript + 
+Tailwind v4 + shadcn/ui. Skillens default till HTML+Tailwind 
+gäller **INTE** här.
 
 **Visuell riktning:** operativt chefsverktyg, inte konsument-landing. Lugnt, datatätt, förtroendeingivande (tänk Linear / Vercel-dashboard). Undvik: AI-lila/rosa gradienter, neon, tunga animationer, emojis som ikoner.
 
