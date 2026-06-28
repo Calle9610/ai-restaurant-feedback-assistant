@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getInsights, getOverviewStats } from '@/lib/data';
-import { Badge } from '@/components/ui/badge';
+import AppHeader from '@/components/AppHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,18 +18,7 @@ export default async function InsightsPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50">
-      <header className="bg-white border-b border-zinc-200 px-8 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="text-xl font-semibold tracking-tight">Gästpuls</Link>
-            <Badge variant="secondary">Demo</Badge>
-          </div>
-          <nav className="flex gap-1">
-            <Link href="/" className="px-3 py-1.5 text-sm rounded-md text-zinc-500 hover:text-zinc-700 transition-colors">Översikt</Link>
-            <Link href="/insights" className="px-3 py-1.5 text-sm rounded-md bg-zinc-100 text-zinc-900 font-medium">Insikter</Link>
-          </nav>
-        </div>
-      </header>
+      <AppHeader activeHref="/insights" />
 
       <main className="max-w-5xl mx-auto px-8 py-8 space-y-8">
 

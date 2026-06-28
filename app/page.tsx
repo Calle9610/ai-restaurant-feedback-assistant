@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { getOverviewStats } from '@/lib/data';
 import { getTheme } from '@/lib/restaurantConfig';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import WeeklyReportSection from './WeeklyReportSection';
+import AppHeader from '@/components/AppHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,18 +17,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-zinc-50">
-      <header className="bg-white border-b border-zinc-200 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl font-bold tracking-tight">Gästpuls</span>
-            <Badge variant="secondary" className="text-xs">Demo</Badge>
-          </div>
-          <nav className="flex gap-1">
-            <Link href="/" className="px-3 py-1.5 text-sm rounded-md bg-zinc-900 text-white font-medium">Översikt</Link>
-            <Link href="/insights" className="px-3 py-1.5 text-sm rounded-md text-zinc-500 hover:text-zinc-800 transition-colors">Insikter</Link>
-          </nav>
-        </div>
-      </header>
+      <AppHeader activeHref="/" />
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-5">

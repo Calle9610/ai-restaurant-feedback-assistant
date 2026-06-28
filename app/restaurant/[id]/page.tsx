@@ -1,8 +1,8 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getRestaurantWithReviews } from '@/lib/data';
 import { getTheme } from '@/lib/restaurantConfig';
 import ReviewList from './ReviewList';
+import AppHeader from '@/components/AppHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,31 +25,22 @@ export default async function RestaurantPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="min-h-screen bg-zinc-50">
-      {/* Coloured header accent */}
-      <div style={{ height: 4, background: theme.accent }} />
+      <AppHeader activeHref="/" />
 
-      <header className="bg-white border-b border-zinc-200 px-6 py-4">
+      <div style={{ height: 3, background: theme.accent }} />
+
+      <div className="bg-card border-b border-border px-6 py-5">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <Link href="/" className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">
-              ← Översikt
-            </Link>
-            <nav className="flex gap-1">
-              <Link href="/" className="px-3 py-1.5 text-sm rounded-md text-zinc-500 hover:text-zinc-800 transition-colors">Översikt</Link>
-              <Link href="/insights" className="px-3 py-1.5 text-sm rounded-md text-zinc-500 hover:text-zinc-800 transition-colors">Insikter</Link>
-            </nav>
-          </div>
-
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight" style={{ color: theme.text }}>
+              <h1 className="text-2xl font-mono font-bold tracking-tight" style={{ color: theme.text }}>
                 {restaurant.name}
               </h1>
-              <p className="text-sm text-zinc-400 mt-0.5">{restaurant.area}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{restaurant.area}</p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-3xl font-bold">{avgRating.toFixed(1)}<span className="text-base text-zinc-400 font-normal"> / 5</span></p>
-              <p className="text-xs text-zinc-400 mt-0.5">{reviews.length} omdömen</p>
+              <p className="text-3xl font-mono font-bold text-foreground">{avgRating.toFixed(1)}<span className="text-base text-muted-foreground font-normal"> / 5</span></p>
+              <p className="text-xs text-muted-foreground mt-0.5">{reviews.length} omdömen</p>
             </div>
           </div>
 
@@ -59,7 +50,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ id:
             <span className="text-red-500 font-medium">↓ {sentimentCounts.negative} negativa</span>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-3xl mx-auto px-6 py-8">
         <ReviewList reviews={reviews} />
