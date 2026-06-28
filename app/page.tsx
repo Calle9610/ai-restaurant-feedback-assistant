@@ -1,9 +1,6 @@
 import Link from 'next/link';
-import { Playfair_Display } from 'next/font/google';
 import { getOverviewStats } from '@/lib/data';
 import { getTheme } from '@/lib/restaurantConfig';
-
-const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700'] });
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import WeeklyReportSection from './WeeklyReportSection';
@@ -54,7 +51,7 @@ export default async function HomePage() {
                   <CardHeader className="pb-3 pt-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <CardTitle className={`text-base ${playfair.className}`} style={{ color: theme.text }}>{r.name}</CardTitle>
+                        <CardTitle className="text-base font-mono" style={{ color: theme.text }}>{r.name}</CardTitle>
                         <p className="text-xs text-zinc-400 mt-0.5">{r.area}</p>
                       </div>
                       <span className={`text-sm font-bold shrink-0 ${trendColor[r.trend]}`} title={trendLabel[r.trend]}>
