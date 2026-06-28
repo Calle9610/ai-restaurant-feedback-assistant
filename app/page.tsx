@@ -8,7 +8,7 @@ import AppHeader from '@/components/AppHeader';
 export const dynamic = 'force-dynamic';
 
 const trendIcon = { up: '↑', down: '↓', stable: '→' };
-const trendColor = { up: 'text-green-600', down: 'text-red-500', stable: 'text-zinc-400' };
+const trendColor = { up: 'text-green-600', down: 'text-red-500', stable: 'text-muted-foreground' };
 const trendLabel = { up: 'Uppåt', down: 'Nedåt', stable: 'Stabilt' };
 
 export default async function HomePage() {
@@ -16,15 +16,15 @@ export default async function HomePage() {
   const totalReviews = restaurants.reduce((s, r) => s + r.totalReviews, 0);
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-background">
       <AppHeader activeHref="/" />
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-5">
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             Gästfeedback omvandlad till konkret handling – per restaurang, varje vecka
           </p>
-          <span className="text-xs text-zinc-400 shrink-0 ml-4">{totalReviews} omdömen</span>
+          <span className="text-xs text-muted-foreground shrink-0 ml-4">{totalReviews} omdömen</span>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -41,7 +41,7 @@ export default async function HomePage() {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <CardTitle className="text-base font-mono" style={{ color: theme.text }}>{r.name}</CardTitle>
-                        <p className="text-xs text-zinc-400 mt-0.5">{r.area}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{r.area}</p>
                       </div>
                       <span className={`text-sm font-bold shrink-0 ${trendColor[r.trend]}`} title={trendLabel[r.trend]}>
                         {trendIcon[r.trend]}
@@ -52,8 +52,8 @@ export default async function HomePage() {
                   <CardContent>
                     <div className="flex items-baseline gap-1.5 mb-4">
                       <span className="text-3xl font-bold">{r.avgRating.toFixed(1)}</span>
-                      <span className="text-sm text-zinc-400">/ 5</span>
-                      <span className="text-xs text-zinc-400 ml-auto">{r.totalReviews} omdömen</span>
+                      <span className="text-sm text-muted-foreground">/ 5</span>
+                      <span className="text-xs text-muted-foreground ml-auto">{r.totalReviews} omdömen</span>
                     </div>
                     <div className="flex h-1.5 rounded-full overflow-hidden gap-px mb-2">
                       <div className="bg-green-400" style={{ width: `${(r.sentiment.positive / total) * 100}%` }} />

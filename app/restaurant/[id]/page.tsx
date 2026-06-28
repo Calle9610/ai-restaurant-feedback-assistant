@@ -24,7 +24,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ id:
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-background">
       <AppHeader activeHref="/" />
 
       <div style={{ height: 3, background: theme.accent }} />
