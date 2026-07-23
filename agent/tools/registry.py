@@ -6,9 +6,9 @@ auto-discovered, so the available set is always visible by reading this file.
 from dataclasses import dataclass
 from typing import Callable
 
-from agent.tools import echo
+from agent.tools import draft_response, echo, get_context
 
-_TOOL_MODULES = [echo]
+_TOOL_MODULES = [echo, get_context, draft_response]
 
 
 @dataclass(frozen=True)

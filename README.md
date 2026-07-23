@@ -20,6 +20,35 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Python agent setup
+
+The agent backend (`agent/`) is a separate Python package, tested independently of the Next.js app.
+
+```bash
+python -m venv .venv
+
+# activate it:
+source .venv/bin/activate      # macOS/Linux
+.venv\Scripts\activate         # Windows (cmd/PowerShell)
+
+pip install -r requirements-dev.txt
+```
+
+Copy `.env.local.example` to `.env.local` and fill in the Supabase and Anthropic values (`AGENT_ANTHROPIC_API_KEY` and `AGENT_MODEL` are the agent's own, separate from the webapp's `ANTHROPIC_API_KEY`). `.venv/` is gitignored — recreate it, don't commit it.
+
+Run the tests (mocked, no API key needed):
+
+```bash
+pytest
+```
+
+Run the agent live (requires a real `AGENT_ANTHROPIC_API_KEY`, not run in CI):
+
+```bash
+python -m agent.run --prompt "..."
+python -m agent.run --review-id <uuid>
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
