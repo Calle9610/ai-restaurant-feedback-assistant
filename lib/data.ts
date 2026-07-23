@@ -41,22 +41,22 @@ export async function getOverviewStats(): Promise<RestaurantStats[]> {
   const now = Date.now();
   const FOUR_WEEKS = 28 * 24 * 60 * 60 * 1000;
 
-  return data.map((r: any) => {
-    const reviews: any[] = r.reviews ?? [];
+  return data.map((r) => {
+    const reviews = r.reviews ?? [];
     const total = reviews.length;
     const avgRating =
       total > 0
-        ? Math.round((reviews.reduce((s: number, rv: any) => s + rv.rating, 0) / total) * 10) / 10
+        ? Math.round((reviews.reduce((s, rv) => s + rv.rating, 0) / total) * 10) / 10
         : 0;
 
-    const recent = reviews.filter((rv: any) => now - new Date(rv.created_at).getTime() < FOUR_WEEKS);
-    const prior = reviews.filter((rv: any) => {
+    const recent = reviews.filter((rv) => now - new Date(rv.created_at).getTime() < FOUR_WEEKS);
+    const prior = reviews.filter((rv) => {
       const age = now - new Date(rv.created_at).getTime();
       return age >= FOUR_WEEKS && age < FOUR_WEEKS * 2;
     });
 
-    const avg = (arr: any[]) =>
-      arr.length ? arr.reduce((s: number, rv: any) => s + rv.rating, 0) / arr.length : null;
+    const avg = (arr: typeof reviews) =>
+      arr.length ? arr.reduce((s, rv) => s + rv.rating, 0) / arr.length : null;
 
     const recentAvg = avg(recent);
     const priorAvg = avg(prior);
@@ -107,7 +107,7 @@ export async function getInsights(): Promise<InsightData> {
   const posCat: Record<string, number> = {};
   const weekMap: Record<string, { sort: string; positive: number; neutral: number; negative: number }> = {};
 
-  for (const rv of reviews as any[]) {
+  for (const rv of reviews) {
     const a = Array.isArray(rv.review_analysis) ? rv.review_analysis[0] : rv.review_analysis;
     if (!a) continue;
     const s = a.sentiment as Sentiment;
@@ -149,13 +149,13 @@ export async function getWeeklyReportData() {
     if (!reviews) continue;
 
     const total = reviews.length;
-    const avgRating = total ? reviews.reduce((s: number, rv: any) => s + rv.rating, 0) / total : 0;
+    const avgRating = total ? reviews.reduce((s, rv) => s + rv.rating, 0) / total : 0;
     const sent: Record<Sentiment, number> = { positive: 0, neutral: 0, negative: 0 };
     const negCat: Record<string, number> = {};
     const posCat: Record<string, number> = {};
     const negativeActions: string[] = [];
 
-    for (const rv of reviews as any[]) {
+    for (const rv of reviews) {
       const a = Array.isArray(rv.review_analysis) ? rv.review_analysis[0] : rv.review_analysis;
       if (!a) continue;
       const s = a.sentiment as Sentiment;
@@ -192,7 +192,7 @@ export async function getRestaurantWithReviews(id: string) {
     .eq('restaurant_id', id)
     .order('created_at', { ascending: false });
 
-  const reviews: Review[] = (raw ?? []).map((rv: any) => {
+  const reviews: Review[] = (raw ?? []).map((rv) => {
     const a = Array.isArray(rv.review_analysis) ? rv.review_analysis[0] : rv.review_analysis;
     return { id: rv.id, rating: rv.rating, text: rv.text, source: rv.source, created_at: rv.created_at, analysis: a ?? null };
   });
