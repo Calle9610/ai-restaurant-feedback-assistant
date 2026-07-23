@@ -1,90 +1,79 @@
-# Gästpuls – Reviderad roadmap & backlog
+# Gästpuls v2 – Roadmap (FDE-caset)
 
-> Ersätter den gamla 7-fasplanen (Foundation, Dashboard MVP, Database Layer, AI Analysis, Automation & n8n, Deployment, Knowledge Assistant/RAG, Portfolio Quality). Den planen var en kvartalsplan – detta är en **veckoplan för en demo**.
->
-> **Så här använder du den:** skapa milstolparna nedan som *Milestones* i GitHub och varje punkt som ett *Issue*. Stäng eller arkivera de gamla issues som inte längre är aktuella. Kryssrutorna under varje issue är förslag på acceptanskriterier.
+> Ersätter v1-roadmapen (M0–M5, Tech Lead-demon) som är **klar och arkiverad**
+> i `docs/archive/ROADMAP-v1.md`.
+> Skapa milstolparna nedan som *Milestones* i GitHub och varje rubrik som ett *Issue*.
+> Kryssrutorna är acceptanskriterier. Varje issue = egen branch = egen PR (squash merge).
 
 ---
 
-## M0 – Setup & live-skelett (Dag 1, högsta prio)
+## M6 – Setup & kvalitetsgrund (Pass 0, ~halv dag)
 
-**Issue: Scaffolda Next.js + TypeScript-projekt**
-- [ ] `npx create-next-app` med TypeScript + App Router
-- [ ] Tailwind + shadcn/ui installerat och fungerar
-- [ ] En enkel landningssida renderar
+**Issue: Repo-hygien och CI**
+- [ ] Stäng inaktuella v1-issues (#44 n8n, #43 Fråga datan, #41 Visuell polish, #35 Analysera omdömen, m.fl.) med kommentar som pekar på PROJECT_BRIEF.md
+- [ ] Verifiera att dark mode-backlog-issuet finns; skapa annars
+- [ ] Lös eller nedgradera legacy-lint i `lib/data.ts` (#45) **INNAN** lint blir CI-gate — sannolik fix: `supabase gen types typescript` istället för handskrivna interfaces
+- [ ] CI via GitHub Actions: lint + typecheck (+ test när ramverk finns) på varje PR
+- [ ] Branch-skydd på `main` (PR krävs)
+- [ ] Repo Settings → Pull Requests: avaktivera "Allow merge commits" så squash är enda merge-vägen
+- [ ] `.env.example` komplett och dokumenterad; inga secrets i repo
 
-**Issue: Deploya tom app live till Vercel**
-- [ ] Repo kopplat till Vercel
-- [ ] Publik URL fungerar (t.ex. `gastpuls.vercel.app`)
-- [ ] Auto-deploy vid push till main
+**Issue: Dokumentationsstruktur**
+- [x] Nya CLAUDE.md / PROJECT_BRIEF.md / ROADMAP.md incheckade (denna PR)
+- [x] Gamla BRIEF + ROADMAP arkiverade i `docs/archive/` med arkiveringsnotis (denna PR)
+- [ ] `docs/adr/` skapad med mall + ADR-0001 (synthetic data, från v1)
+- [ ] Fiktiva krognamn ersätter riktiga i seed-data och UI
 
-**Issue: Sätt upp Supabase-projekt**
-- [ ] Projekt skapat, connection string sparad i `.env.local` (ej committad)
-- [ ] Supabase-klient initierad i appen
-- [ ] En testtabell läses från appen
+**Issue: Python-agentpaketet scaffoldat**
+- [ ] `agent/`-paket med pytest uppsatt och ett trivialt test som går grönt i CI
+- [ ] Kan läsa/skriva mot Supabase från Python
 
-## M1 – Datalager (Dag 1–2)
+## M7 – Agent-kärnan (Pass 1–2)
 
-**Issue: Skapa databasschema**
-- [ ] Tabeller: `restaurants`, `reviews`, `review_analysis`, `weekly_summaries`
-- [ ] Relationer + lämpliga index
+**Issue: Tool-calling-loop**
+- [ ] Loop byggd från grunden (Anthropic SDK): prompt → tool-val → exekvering → resultat tillbaka → tills klar
+- [ ] Tool-register med JSON-scheman, en fil per tool
+- [ ] ADR-0002: varför from scratch istället för ramverk
 
-**Issue: Bygg generator för syntetisk data**
-- [ ] Riktiga krognamn (Tennstopet, Kommendören, Tako m.fl.)
-- [ ] Trovärdiga svenska omdömen, realistisk betygsfördelning
-- [ ] Tidsstämplar spridda över ~8 veckor (för trender)
-- [ ] Seed-script som fyller databasen
+**Issue: `get_context` + `draft_response`**
+- [ ] `get_context(review_id)` returnerar strukturerad kontext från Supabase
+- [ ] `draft_response(...)` genererar svarsutkast + severity-klassning (strukturerad JSON, robust parsing)
+- [ ] Enhetstester för båda tools (LLM-anrop mockade)
+- [ ] Körbart CLI: `python -m agent.run --review-id X` ger klassning + utkast
 
-## M2 – AI-analyspipeline (Dag 2)
+## M8 – Salesforce-integrationen (Pass 3) ⭐ casets kärna
 
-**Issue: Analysera omdömen med Claude (förberäknat)**
-- [ ] Funktion som per omdöme returnerar sentiment, category, summary, suggested_action
-- [ ] Strukturerad output (JSON), robust parsing
-- [ ] Batch-script som analyserar all seed-data och sparar i `review_analysis`
+**Issue: Developer Edition-org + auth**
+- [ ] Org skapad, connected app konfigurerad, OAuth-flöde fungerar från Python
+- [ ] Credentials endast via env; dokumenterat i `.env.example`
 
-**Issue: En live AI-endpoint för demon**
-- [ ] Endpoint "analysera nytt omdöme" som kör i realtid
-- [ ] Anropas från UI:t med en knapp (bevisar att det är riktig AI)
+**Issue: `create_case`-toolet**
+- [ ] Skapar Case via REST API med mappade fält (text → description, severity → priority)
+- [ ] Anropas endast vid negativ recension över tröskel; varje anrop loggas med beslutsunderlag
+- [ ] End-to-end-test: ny recension → Case syns i Salesforce-UI:t
+- [ ] ADR-0003: REST API nu, Agentforce custom action som nästa steg
 
-## M3 – Dashboard (Dag 2–3)
+## M9 – Observability & evals (Pass 4)
 
-**Issue: Översiktsvy (koncern)**
-- [ ] Kort per restaurang: snittbetyg, antal omdömen, trendpil
-- [ ] Sortering/enkel filtrering
+**Issue: Langfuse-tracing**
+- [ ] Varje agent-körning ger trace: tools, latens per steg, tokenkostnad, utfall
+- [ ] ADR-0004: observability-val
 
-**Issue: Per-restaurang-vy**
-- [ ] Omdömeslista med AI-taggar (sentiment, tema, åtgärd)
-- [ ] Filtrera på sentiment/tema
+**Issue: Eval-set**
+- [ ] 10–15 recensioner märkta med facit (severity + Case ja/nej)
+- [ ] Eval-körning rapporterar success rate; körbar via pytest
+- [ ] Minst ett prompt-failure dokumenterat: trace → rotorsak → fix → ny mätning
 
-## M4 – Insikter & veckorapport (Dag 3)
+**Issue: Metrics i dashboarden**
+- [ ] Ny vy/sektion: behandlade recensioner, andel Cases, snittlatens, kostnad, eval-score
+- [ ] Följer design-systemet (MASTER.md)
 
-**Issue: Insiktsvy**
-- [ ] Topp-klagomål och topp-beröm
-- [ ] Sentiment över tid (enkel graf)
-- [ ] Jämförelse mellan krogar
+## M10 – Story & leverans
 
-**Issue: AI-genererad veckorapport**
-- [ ] Knapp som genererar ledningssammanfattning (per krog + koncern)
-- [ ] Sparas i `weekly_summaries` och visas i UI
+**Issue: README + demovideo**
+- [ ] README (engelska): problem, arkitekturdiagram, flödet, metrics, "next steps at a real customer"
+- [ ] 3-min video: recension in → agentbeslut → Case dyker upp i Salesforce → trace i Langfuse
+- [ ] Repetera demo-berättelsen mot talking points i PROJECT_BRIEF.md §6
 
-## M5 – Polish & demoförberedelse (Dag 3–4)
-
-**Issue: Visuell polish med deras varumärken**
-- [ ] Konsekvent, ren design; krognamn/områden känns äkta
-- [ ] Mobilvänlig nog att visa på skärm
-
-**Issue: Demo-manus & talking points**
-- [ ] Vad är mockat vs. riktigt
-- [ ] Koppling till Maîtres-data + officiella API:er i produktion
-- [ ] Kostnad, GDPR, och "första 2–3 interna processerna jag AI-stöttar"
-- [ ] Repetera flödet 2–3 gånger
-
-## Stretch – om tid finns (Dag 4)
-
-**Issue: "Fråga datan"-ruta**
-- [ ] Fritextfråga → skicka aggregerad data till Claude → svar
-- [ ] Ingen vektor-DB; håll det enkelt
-
-**Issue: n8n veckoautomation**
-- [ ] Flöde som triggar måndagar, hämtar färsk data, genererar rapport
-- [ ] Skickar via mail eller Slack/Teams
+## Out of scope (nämns i README, byggs ej)
+Bemanning/leverantörsflöden, multi-agent, RAG, Snowflake-migrering, n8n-automation, dark mode (låst till light, se backlog-issue).
