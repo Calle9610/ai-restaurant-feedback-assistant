@@ -50,6 +50,8 @@
 
 :root {
   /* Gästpuls design system — MASTER.md */
+  /* Locked to light: .dark below doesn't match brand tokens yet */
+  color-scheme: light;
   --background: oklch(0.984 0.002 248);   /* #F8FAFC */
   --foreground: oklch(0.351 0.170 264);   /* #1E3A8A navy */
   --card: oklch(1 0 0);                   /* #FFFFFF */
