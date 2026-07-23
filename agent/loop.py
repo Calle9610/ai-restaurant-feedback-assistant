@@ -5,11 +5,11 @@ Built from scratch against the Anthropic SDK (no agent framework) — see
 docs/adr/ADR-0002-tool-loop-from-scratch.md for why.
 """
 
-import os
 from dataclasses import dataclass
 
 from anthropic import Anthropic
 
+from agent.anthropic_client import get_client
 from agent.tools.registry import get_tool, list_schemas
 
 DEFAULT_MAX_ITERATIONS = 10
@@ -36,10 +36,6 @@ class LoopResult:
     final_text: str
     messages: list[dict]
     model: str
-
-
-def _get_client() -> Anthropic:
-    return Anthropic(api_key=os.environ["AGENT_ANTHROPIC_API_KEY"])
 
 
 def _execute_tool_call(block) -> dict:
@@ -73,7 +69,7 @@ def run_loop(
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
     client: Anthropic | None = None,
 ) -> LoopResult:
-    client = client or _get_client()
+    client = client or get_client()
     messages: list[dict] = [{"role": "user", "content": prompt}]
 
     for _ in range(max_iterations):
