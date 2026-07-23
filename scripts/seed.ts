@@ -9,11 +9,11 @@ function rndDate(weeksBack = 8): string {
 
 type ReviewRow = { rating: 1 | 2 | 3 | 4 | 5; text: string };
 
-// ─── Tennstopet ───────────────────────────────────────────────────────────────
+// ─── Tunnbindaren ─────────────────────────────────────────────────────────────
 // Profil: Klassisk husmanskrog i Vasastan. Stabilt stark – stammisar och välförtjänt rykte.
 // Enstaka klagomål på väntetid och service under rusningstid. Snitt ~4.2.
 
-const tennstopet: ReviewRow[] = [
+const tunnbindaren: ReviewRow[] = [
   { rating: 5, text: "Klassisk stockholmskrog på sitt bästa. Köttbullarna med potatismos är de bästa jag ätit – perfekt kryddade och lagom mäktiga. Personalen kände igen oss och välkomnade oss värmt. Absolut ett återbesök." },
   { rating: 5, text: "Bästa husmanskost i Vasastan, punkt. Lunchen är ett oslagbart erbjudande – soppa, bröd och en öl för ett rimligt pris. Var hittar man det mer?" },
   { rating: 5, text: "Stämningen på fredag kväll är magisk. Musik i lagom volym, gäster i alla åldrar och personal som har kul på jobbet. Maten är traditionell och vällagad." },
@@ -46,18 +46,18 @@ const tennstopet: ReviewRow[] = [
   { rating: 4, text: "Krogen är alltid fullbokad vilket säger allt. Lyckades få ett bord i baren på en torsdag – perfekt spontanbesök." },
 ];
 
-// ─── Kommendören ─────────────────────────────────────────────────────────────
+// ─── Envoyén ──────────────────────────────────────────────────────────────────
 // Profil: Formell klassisk restaurang på Östermalm. Hög prisnivå skapar höga förväntningar.
 // Klagomål på pris/portion och stel service. Maten imponerar när allt stämmer. Snitt ~4.1.
 
-const kommendoren: ReviewRow[] = [
+const envoyen: ReviewRow[] = [
   { rating: 5, text: "En av Stockholms absolut bästa klassiska restauranger. Maten är sofistikerad utan att vara pretentiös. Vinlistan är imponerande och sommelieren är en av de kunnigaste jag mött." },
   { rating: 5, text: "Perfekt för affärsmiddag. Diskret och elegant miljö, mat av högsta klass. Ryggbiffens stekgrad var exakt som beställt – en sällsynthet nuförtiden." },
   { rating: 5, text: "Jubileumsmiddag som inte glöms. Personalen fixade diskret en liten dekoration på bordet. Maten var strålande och vinerna välmatchade." },
   { rating: 5, text: "Bästa viltmenyn i Stockholm höst som höst. Rådjuret smälte i munnen och rödvinssåsen var magnifik. Värt att boka långt i förväg." },
   { rating: 5, text: "Stämningen är tidlöst elegant. Klassisk stockholmsrestaurang med ett hjärta. Maten är traditionell men inte gammalmodig." },
   { rating: 5, text: "God mat, varm personal, vacker lokal. Lite formellt men det tillhör konceptet. Svårt att hitta ett argument för att inte ge fem stjärnor." },
-  { rating: 5, text: "Lunchmötet avklarades med bravur tack vare Kommendörens professionalism. Enkel, smakrik lunch och diskret service. Perfekt miljö för affärer." },
+  { rating: 5, text: "Lunchmötet avklarades med bravur tack vare Envoyéns professionalism. Enkel, smakrik lunch och diskret service. Perfekt miljö för affärer." },
   { rating: 5, text: "Ostserveringen är en upplevelse i sig. Kunnig personal som guidar dig rätt. Avslutade en strålande middag på allra bästa sätt." },
   { rating: 5, text: "Suverän matupplevelse. Från amuse-bouche till dessert var allt välkalibrerat. Personalen är lyhörd och genuint kunnig." },
   { rating: 5, text: "Gick dit med låga förväntningar och gick därifrån helt imponerad. Torskrätten var en avslöjning och priset var rimligare än väntat." },
@@ -83,11 +83,11 @@ const kommendoren: ReviewRow[] = [
   { rating: 5, text: "Prova kalvfilén! Sältan, stekyta och tillbehören var perfekt balanserade. Sommelier-guidningen var ett lyft för hela kvällen." },
 ];
 
-// ─── Tako ─────────────────────────────────────────────────────────────────────
-// Profil: Japansk-nordisk fusionskrog på Östermalm. Hög kreativitet och hög prisnivå.
+// ─── Kobo ─────────────────────────────────────────────────────────────────────
+// Profil: Japansk-nordisk fusionskrog på Södermalm. Hög kreativitet och hög prisnivå.
 // Klagomål på portionsstorlekar och pris. Omakase-upplevelse i toppen. Snitt ~4.1.
 
-const tako: ReviewRow[] = [
+const kobo: ReviewRow[] = [
   { rating: 5, text: "Bästa sushiupplevelsen i Stockholm. Chefens specialrulle med tryffelriven och wagyu är en sensation. Atmosfären är livlig och bartenderna är riktiga konstnärer." },
   { rating: 5, text: "Fantastisk omakase! Vi satte oss i chefens händer och varje rätt var en avslöjning. Extremt kreativt och välbalanserat utan att bli pretentiöst." },
   { rating: 5, text: "Karaktär och kreativitet i varje rätt. Tataki, crudo och japanska cocktails – något för alla sinnen. Perfekt för en specialkväll." },
@@ -120,11 +120,11 @@ const tako: ReviewRow[] = [
   { rating: 1, text: "Bokat bord bekräftades men när vi anlände hade de gett bort det. Erbjöds att vänta 1,5 timme. Gick hem och åt pizza istället. Håller inte måttet." },
 ];
 
-// ─── Tennstopet Grill ─────────────────────────────────────────────────────────
+// ─── Tunnbindaren Grill ───────────────────────────────────────────────────────
 // Profil: Tydlig uppåtgång. Tidiga reviews visar ojämn stekgrad och trög service.
 // Senaste 2 månader märks klar förbättring – ny kökschef och starkare råvaror. Snitt ~4.1.
 
-const tennstopetGrill: ReviewRow[] = [
+const tunnbindarenGrill: ReviewRow[] = [
   { rating: 5, text: "Grillad entrecôte med tryffelsmör – perfekt rosa inuti och fin brynt yta. Märkbar skillnad mot mitt besök för ett par månader sedan. Det som var ojämnt då är nu konsekvent bra." },
   { rating: 5, text: "Ribeye för 395 kr med salladsbuffé och surdegsbröd ingår. Köttet var mört och stekgraden exakt som beställt. Bättre än de flesta steakhouses i stan." },
   { rating: 5, text: "Grillkvällen på torsdagar är ett fynd – live-grillning av hel oxfilé på öppen eld, kallt öl och avslappnad stämning. Bokat redan om." },
@@ -154,11 +154,11 @@ const tennstopetGrill: ReviewRow[] = [
   { rating: 4, text: "Märker att de hittat sin rytm nu. Personal verkar trivas och det märks i tempot. Hamburgaren var solid – inte revolutionerande men pålitlig." },
 ];
 
-// ─── Kapten Jack ─────────────────────────────────────────────────────────────
+// ─── Ankarplatsen ─────────────────────────────────────────────────────────────
 // Profil: Kämpar med pulled pork-burgaren – torr, brödet smular sönder, tre gäster V23
 // nämner exakt samma rätt. Stämning/bar är stark, fisken utmärkt. Snitt ~3.8.
 
-const kaptenJack: ReviewRow[] = [
+const ankarplatsen: ReviewRow[] = [
   { rating: 5, text: "Bästa sjömatstallriken i Stockholm. Ostron, räkor och hummer i perfekt kondition. Havsutblick och nautisk inredning – en upplevelse från start till slut." },
   { rating: 5, text: "Fish and chips var fantastisk – frasig smet, genomstekt och med hemgjord remouladsås. Bästa versionen jag hittat i stan. Återkommer definitivt." },
   { rating: 5, text: "Sjöfartstema genomfört med stil ned till detaljerna. Stämningen på fredagskvällar är fantastisk och bartenderna blandade drinkar som var rena konstverk." },
@@ -192,11 +192,11 @@ const kaptenJack: ReviewRow[] = [
 // ─── Restaurang-definitioner ──────────────────────────────────────────────────
 
 const restaurantDefs = [
-  { name: 'Tennstopet',       area: 'Vasastan'  },
-  { name: 'Kommendören',      area: 'Östermalm' },
-  { name: 'Tako',             area: 'Östermalm' },
-  { name: 'Tennstopet Grill', area: 'Vasastan'  },
-  { name: 'Kapten Jack',      area: 'Norrmalm'  },
+  { name: 'Tunnbindaren',       area: 'Vasastan'  },
+  { name: 'Envoyén',            area: 'Östermalm' },
+  { name: 'Kobo',               area: 'Södermalm' },
+  { name: 'Tunnbindaren Grill', area: 'Vasastan'  },
+  { name: 'Ankarplatsen',       area: 'Norrmalm'  },
 ];
 
 // ─── Seed ─────────────────────────────────────────────────────────────────────
@@ -239,22 +239,22 @@ async function seed() {
   if (delErr) { console.error(delErr); process.exit(1); }
 
   const rows = [
-    ...tennstopet.map((r)      => ({ ...r, restaurant_id: requireId('Tennstopet'),       source: 'maîtres', created_at: rndDate() })),
-    ...kommendoren.map((r)     => ({ ...r, restaurant_id: requireId('Kommendören'),      source: 'maîtres', created_at: rndDate() })),
-    ...tako.map((r)            => ({ ...r, restaurant_id: requireId('Tako'),             source: 'maîtres', created_at: rndDate() })),
-    ...tennstopetGrill.map((r) => ({ ...r, restaurant_id: requireId('Tennstopet Grill'), source: 'maîtres', created_at: rndDate() })),
-    ...kaptenJack.map((r)      => ({ ...r, restaurant_id: requireId('Kapten Jack'),      source: 'maîtres', created_at: rndDate() })),
+    ...tunnbindaren.map((r)      => ({ ...r, restaurant_id: requireId('Tunnbindaren'),       source: 'maîtres', created_at: rndDate() })),
+    ...envoyen.map((r)           => ({ ...r, restaurant_id: requireId('Envoyén'),            source: 'maîtres', created_at: rndDate() })),
+    ...kobo.map((r)              => ({ ...r, restaurant_id: requireId('Kobo'),               source: 'maîtres', created_at: rndDate() })),
+    ...tunnbindarenGrill.map((r) => ({ ...r, restaurant_id: requireId('Tunnbindaren Grill'), source: 'maîtres', created_at: rndDate() })),
+    ...ankarplatsen.map((r)      => ({ ...r, restaurant_id: requireId('Ankarplatsen'),       source: 'maîtres', created_at: rndDate() })),
   ];
 
   const { error: insErr } = await db.from('reviews').insert(rows);
   if (insErr) { console.error(insErr); process.exit(1); }
 
   console.log(`\n✓ Seedade ${rows.length} omdömen totalt:`);
-  console.log(`  Tennstopet:       ${tennstopet.length} omdömen`);
-  console.log(`  Kommendören:      ${kommendoren.length} omdömen`);
-  console.log(`  Tako:             ${tako.length} omdömen`);
-  console.log(`  Tennstopet Grill: ${tennstopetGrill.length} omdömen  (profil: uppåtgång)`);
-  console.log(`  Kapten Jack:      ${kaptenJack.length} omdömen  (profil: kämpar med burgarna)`);
+  console.log(`  Tunnbindaren:       ${tunnbindaren.length} omdömen`);
+  console.log(`  Envoyén:            ${envoyen.length} omdömen`);
+  console.log(`  Kobo:               ${kobo.length} omdömen`);
+  console.log(`  Tunnbindaren Grill: ${tunnbindarenGrill.length} omdömen  (profil: uppåtgång)`);
+  console.log(`  Ankarplatsen:       ${ankarplatsen.length} omdömen  (profil: kämpar med burgarna)`);
 }
 
 seed();

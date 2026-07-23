@@ -21,7 +21,7 @@ export async function POST() {
   AI-föreslagna åtgärder: ${r.suggestedActions.slice(0, 2).map((a, i) => `(${i + 1}) ${a}`).join(' ')}`
   ).join('\n\n');
 
-  const prompt = `Du är en senior analytiker på Stockholm Krogbolag. Skriv en koncis veckorapport på svenska (max 350 ord) baserat på dessa gästfeedback-data.
+  const prompt = `Du är en senior analytiker på Krogverket. Skriv en koncis veckorapport på svenska (max 350 ord) baserat på dessa gästfeedback-data.
 
 KONCERNDATA
 Totalt: ${totalReviews} omdömen | ${Math.round((totalPos / totalReviews) * 100)}% positiva | ${Math.round((totalNeg / totalReviews) * 100)}% negativa
