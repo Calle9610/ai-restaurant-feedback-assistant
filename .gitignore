@@ -46,3 +46,6 @@ next-env.d.ts
 
 # claude code local settings
 .claude/settings.local.json
+
+# generated skill tooling (kept locally, not versioned)
+.claude/skills/
