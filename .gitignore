@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# python
+__pycache__/
+
 # production
 /build
 
@@ -40,3 +43,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude code local settings
+.claude/settings.local.json
+
+# generated skill tooling (kept locally, not versioned)
+.claude/skills/

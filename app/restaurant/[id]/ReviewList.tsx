@@ -56,11 +56,11 @@ export default function ReviewList({ reviews }: { reviews: Review[] }) {
           <button
             key={s}
             onClick={() => setActiveSentiment(s)}
-            className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors cursor-pointer ${
               activeSentiment === s
-                ? 'bg-zinc-900 text-white border-zinc-900'
+                ? 'bg-primary text-primary-foreground border-primary'
                 : s === 'all'
-                ? 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
+                ? 'bg-card text-muted-foreground border-border hover:border-foreground/30'
                 : `${sentimentConfig[s].pill} hover:opacity-80`
             }`}
           >
@@ -72,7 +72,7 @@ export default function ReviewList({ reviews }: { reviews: Review[] }) {
         <select
           value={activeCategory}
           onChange={(e) => setActiveCategory(e.target.value as Category | 'all')}
-          className="ml-auto px-3 py-1.5 rounded-full text-sm border border-zinc-200 bg-white text-zinc-600 cursor-pointer focus:outline-none focus:border-zinc-400"
+          className="ml-auto px-3 py-1.5 rounded-full text-sm border border-border bg-card text-muted-foreground cursor-pointer focus:outline-none focus:border-primary transition-colors"
         >
           <option value="all">Alla kategorier</option>
           {(Object.entries(categoryLabels) as [Category, string][]).map(([key, label]) => (
@@ -81,38 +81,38 @@ export default function ReviewList({ reviews }: { reviews: Review[] }) {
         </select>
       </div>
 
-      <p className="text-xs text-zinc-400 mb-4">{filtered.length} omdömen visas</p>
+      <p className="text-xs text-muted-foreground mb-4">{filtered.length} omdömen visas</p>
 
       {/* List */}
       <div className="space-y-3">
         {filtered.map((r) => (
-          <div key={r.id} className="bg-white rounded-lg border border-zinc-200 p-4">
+          <div key={r.id} className="bg-card rounded-lg border border-border p-4">
             <div className="flex items-center justify-between mb-2">
               <Stars n={r.rating} />
-              <span className="text-xs text-zinc-400">{formatDate(r.created_at)}</span>
+              <span className="text-xs text-muted-foreground">{formatDate(r.created_at)}</span>
             </div>
 
-            <p className="text-sm text-zinc-700 leading-relaxed mb-3">{r.text}</p>
+            <p className="text-sm text-foreground leading-relaxed mb-3">{r.text}</p>
 
             {r.analysis && (
-              <div className="border-t border-zinc-100 pt-3 space-y-2">
+              <div className="border-t border-border pt-3 space-y-2">
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1.5">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${sentimentConfig[r.analysis.sentiment].badge}`}>
                     {sentimentConfig[r.analysis.sentiment].label}
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground border border-border">
                     {categoryLabels[r.analysis.category] ?? r.analysis.category}
                   </span>
                 </div>
 
                 {/* AI summary */}
-                <p className="text-xs text-zinc-500 leading-relaxed">{r.analysis.summary}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{r.analysis.summary}</p>
 
                 {/* Suggested action – the key value prop */}
-                <div className="bg-blue-50 border border-blue-100 rounded px-3 py-2">
-                  <span className="text-xs font-semibold text-blue-700">Föreslagen åtgärd  </span>
-                  <span className="text-xs text-blue-800">{r.analysis.suggested_action}</span>
+                <div className="bg-primary/5 border border-primary/20 rounded px-3 py-2">
+                  <span className="text-xs font-semibold text-primary">Föreslagen åtgärd </span>
+                  <span className="text-xs text-foreground">{r.analysis.suggested_action}</span>
                 </div>
               </div>
             )}
@@ -120,7 +120,7 @@ export default function ReviewList({ reviews }: { reviews: Review[] }) {
         ))}
 
         {filtered.length === 0 && (
-          <p className="text-sm text-zinc-400 text-center py-12">Inga omdömen matchar filtret.</p>
+          <p className="text-sm text-muted-foreground text-center py-12">Inga omdömen matchar filtret.</p>
         )}
       </div>
     </div>

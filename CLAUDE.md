@@ -93,9 +93,33 @@ Claude Code agerar som en **senior men pedagogisk** kodpartner. För varje steg:
 6. Undvik stora rewrites; bygg inkrementellt.
 7. Hjälp Carl **förstå** koden, inte bara generera den.
 
-## 9. Dagsplan (riktmärke)
+## 9. Status och plan
 
-- **Dag 1 (idag):** repo + Next.js-scaffold + Tailwind/shadcn + Supabase-projekt + schema + tom app **live på Vercel** + datagenerator.
-- **Dag 2:** AI-analyspipeline (förberäkna + spara) + översikt + per-restaurang-vy.
-- **Dag 3:** insikter + AI-veckorapport + design-polish (deras varumärken).
-- **Dag 4:** buffert/stretch (fråga datan, n8n) + repetera demon + spika talking points.
+- **Dag 1–3: klart och presenterat.** Grundfunktionaliteten (översikt, per-restaurang-vy, insikter, AI-veckorapport) är byggd, deployad och demad.
+- **Fas 2 (nu): UI-polish enligt sektion 10** – design system + inkrementell komponent-refaktorering för att höja den visuella kvaliteten till "färdig produkt"-nivå.
+- **Borttaget ur scopet:** de ursprungliga dag 4-stretchpunkterna (fråga datan, n8n) är inte längre aktuella.
+
+## 10. UI-arbetssätt och skills (Fas 2: polish)
+
+Funktionaliteten (dag 1–3) är klar och demad. Målet framåt är att höja den visuella kvaliteten till "färdig produkt"-nivå. Två design-skills används med **OLIKA roller** – de ska inte konkurrera:
+
+- **ui-ux-pro-max** (`.claude/skills/ui-ux-pro-max/`): körs **EN gång** för att generera ett design system anpassat för en intern B2B analytics-dashboard. Resultatet persisteras till `design-system/gästpuls/MASTER.md` = källa till sanning för alla visuella beslut (färg, typografi, stil).
+- **frontend-design** (inbyggd): används **löpande** vid varje komponentändring för hantverket – spacing, hierarki, states, tillgänglighet.
+
+**Ordning:** läs `design-system/gästpuls/MASTER.md` först (tokens vinner), läs sedan frontend-design för utförandet. Generera **ALDRIG** om design-systemet mitt i arbetet – justera `MASTER.md` medvetet om något ska ändras.
+
+**Stack-tvång:** all UI är Next.js (App Router) + TypeScript + 
+Tailwind v4 + shadcn/ui. Skillens default till HTML+Tailwind 
+gäller **INTE** här.
+
+**Visuell riktning:** operativt chefsverktyg, inte konsument-landing. Lugnt, datatätt, förtroendeingivande (tänk Linear / Vercel-dashboard). Undvik: AI-lila/rosa gradienter, neon, tunga animationer, emojis som ikoner.
+
+**Arbetssätt:** applicera design-systemet som en **INKREMENTELL refaktorering** av befintliga komponenter – inga stora rewrites (se sektion 8). En vy/komponent åt gången, visa planen innan ändring.
+
+**Engångskommando för att generera design-systemet:**
+
+```bash
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py \
+  "internal B2B analytics dashboard for a restaurant group, guest feedback and operations" \
+  --design-system --persist -p "Gästpuls"
+```
