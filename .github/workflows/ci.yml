@@ -19,4 +19,17 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
 
-      # TODO: add test step once pytest (agent/) and Vitest (frontend) are set up
+      # TODO: add Vitest step once the frontend test suite is set up
+
+  agent-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements-dev.txt
+      - run: pytest
