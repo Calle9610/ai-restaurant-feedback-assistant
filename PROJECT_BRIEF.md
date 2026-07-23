@@ -1,101 +1,79 @@
-# Gästpuls – Projektbrief (källa till sanning)
+# Gästpuls – Projektbrief (källa till sanning för SCOPE)
 
-> Detta dokument är projektets "source of truth". Det används på två ställen:
-> 1. Som **instruktioner i ett Claude Project** (klistras in i projektets instruktionsfält).
-> 2. Som **CLAUDE.md i repot** så att Claude Code alltid har rätt kontext.
+> Detta dokument äger projektets **varför, vad och avgränsningar**.
+> Arbetssätt och konventioner: `CLAUDE.md`. Plan och ordning: `ROADMAP.md`.
 > Uppdatera detta dokument när beslut ändras – inte enskilda chattar.
+>
+> **Historik:** Gästpuls v1 byggdes för ett annat case (Tech Lead-demo) och är
+> levererad. Den briefen är arkiverad i `docs/archive/PROJECT_BRIEF-v1.md` och
+> gäller inte längre. Detta dokument definierar v2.
 
 ---
 
 ## 1. Varför detta projekt finns
 
-Carl intervjuar för en **Tech Lead-roll på Stockholm Krogbolag** (restaurangkoncern bakom bl.a. Tennstopet, Tennstopet Grill, Kommendören, Tako, Kapten Jack och boknings-/betalappen **Maîtres**). Rekryteraren har indikerat att bolaget **inte har någon in-house** som driver tech/AI idag, att appen underhålls av en **extern konsultbyrå**, och att fokus ligger på att **få den interna organisationen att jobba smartare med AI och automation**.
+Carl söker rollen **Forward Deployed Engineer på Salesforce Stockholm** (JR349196). Annonsen efterfrågar ett uppvisbart AI-case och betonar: agentiska lösningar i produktion, tool calls mot riktiga system, datapipelines, förmågan att förklara varför en prompt failade, och att utvärdera AI-output med engineering rigor.
 
-Syftet med detta projekt är **inte** att bygga en färdig produkt. Det är att, på några dagar och med små resurser, producera en **liten, körbar demo** som bevisar:
+Gästpuls v1 (analytics-dashboard med AI-kategoriserade recensioner, deployad på Vercel med applicerat design system) finns redan. **Detta projekt är v2: vi bygger den agentiska ryggraden** som gör Gästpuls till ett komplett FDE-case.
 
-- att Carl går från **affärsproblem → teknisk lösning → deployad produkt** snabbt och pragmatiskt,
-- att han förstår **deras** verksamhet (krog + Maîtres), inte ett generiskt portfolio-case,
-- att han tänker som en **Tech Lead**: omdöme kring data, kostnad, GDPR, och nästa steg.
+Demon ska bevisa fyra saker:
 
-**Demon är ~50 % produkt, 50 % berättelse.** Koden ska fungera live, men poängen är hur Carl ramar in värdet i intervjun.
+1. **Agent som agerar, inte bara svarar** – tool-calling-loop byggd från grunden, med kontrollerad action-taking mot ett externt system.
+2. **Riktig Salesforce-integration** – agenten skapar Cases i en riktig Developer Edition-org. Detta är casets kärnbevis.
+3. **Engineering rigor kring icke-determinism** – tracing (Langfuse), eval-set med facit, mätbar success rate, och minst ett dokumenterat prompt-failure med rotorsak och fix.
+4. **End-to-end-tänk** – data in → pipeline → agentbeslut → action → observability → dashboard. Smalt men komplett.
 
-## 2. Vad vi bygger: "Gästpuls"
+**Demon är ~50 % produkt, 50 % berättelse.** README, ADRs och en kort demovideo är del av leveransen.
 
-Ett **internt chefsverktyg** som tar gästfeedback och gör om den till **konkret handling per restaurang**. Vinkeln som gör det vasst: Maîtres samlar **redan** in betyg och gästsignaler – det bolaget saknar är ett sätt att omvandla den datan till veckovisa, prioriterade åtgärder för krogcheferna. Det är där Gästpuls kommer in.
+## 2. Kärnflödet (enda flödet i scope)
 
-**Kärnflöde:** omdömen in → AI kategoriserar (sentiment, tema, kort summering, **föreslagen åtgärd**) → dashboard visar läget per krog → AI genererar en veckorapport till ledningen.
+**Recension-till-action:**
 
-## 3. Hårda avgränsningar (läs detta innan du föreslår något)
+1. En ny recension "landar" (simulerad inmatning i Supabase).
+2. Agenten hämtar kontext (`get_context`): restaurang, historik, tidigare mönster.
+3. Agenten bedömer sentiment + allvarsgrad och draftar ett svar (`draft_response`).
+4. Vid negativ recension över tröskelvärde: agenten skapar ett Case i Salesforce (`create_case`) med recension, utkast och prioritet.
+5. Hela körningen tracas i Langfuse; metrics visas i Gästpuls-dashboarden.
 
-- **Endast syntetisk data.** Vi scrapar INTE TripAdvisor/Google. Skäl: (1) bryter mot deras användarvillkor, (2) tekniskt sköra scrapers äter upp veckan, (3) viktigast: man söker en ledarroll och ska sätta standarden – en demo byggd på villkorsbrott skickar fel signal. Vi genererar realistisk svensk data med riktiga restaurangnamn. "Så här kopplar vi mot Maîtres riktiga betygsdata och officiella API:er i produktion" är en **talking point**, inte något vi bygger nu.
-- **En tunn vertikal skiva, inte 7 faser.** Hellre något litet som är helt klart och snyggt än mycket som är halvfärdigt.
-- **Ingen auth, ingen multi-tenant, ingen RAG-infra** i grundscopet. Single-purpose demo.
-- **Undvik överengineering.** Inga köer, ingen microservice-arkitektur, ingen egen VPS. Vercel + Supabase räcker.
-- AI-analysen **förberäknas** på seed-datan och sparas i databasen, så demon är blixtsnabb. Vi lämnar **en** live-knapp (analysera nytt omdöme / generera veckorapport) så de ser att det är riktig AI, inte attrapp.
+## 3. Hårda avgränsningar
 
-## 3b. Datakvalitetsprinciper
-
-Den syntetiska datan ska kännas operativt trovärdig för någon som arbetar med dessa restauranger dagligen. Det innebär:
-
-- **Varje restaurang har en distinkt profil.** En kämpar med ett specifikt problem (t.ex. väntetider, pris), en annan visar tydlig uppåtgång. Ingen restaurang är "genomsnittlig på allt".
-- **Realistisk betygsfördelning.** Enstaka 2:or och 3:or mitt i perioder av höga betyg – inte en jämn kurva. Snittbetyg på 3.8–4.3 beroende på restaurang.
-- **Specifika, agerbara kommentarer.** Inte "maten var god" utan "Pulled pork-burgaren på Captain Jack var torr och brödet smulade sönder – tre gäster V23 nämner samma rätt". Det är den nivån som gör att krogchefen kan agera direkt.
-- **Svenska kommentarer** med naturlig variation i ton och längd.
+- **Endast syntetisk data.** Ingen scraping (villkorsbrott, skört, fel signal). Datakvalitetsprinciperna från v1 gäller fortsatt: distinkta restaurangprofiler, realistisk betygsfördelning, specifika agerbara svenska kommentarer.
+- **Fiktiv restaurangkoncern.** Inga riktiga restaurangers namn eller varumärken – detta är en publik portfolio. Hitta på trovärdiga svenska krognamn.
+- **Ett flöde, end-to-end.** Bemanning, leverantörsbeställningar, multi-agent, RAG: uttryckligen out of scope. De nämns som "nästa steg" i README – de byggs inte.
+- **Kontrollerad action-taking.** `create_case` är det enda toolet som skriver till ett externt system. Varje anrop loggas med beslutsunderlag.
+- **Ingen auth, ingen multi-tenant.** Single-purpose demo.
+- **Undvik överengineering.** Inga köer, inga microservices. Vercel + Supabase + ett Python-agentpaket räcker.
+- **Snowflake är en talking point, inte ett krav.** Pipelinen byggs mot Supabase; i README/intervju förklaras hur samma modell flyttar till Snowflake/Databricks hos en kund. (Omprövas bara om tid finns i slutet.)
+- **Dark mode är låst till light** tills brand-tokens finns (backlog-issue). Inget dark-arbete i detta scope.
 
 ## 4. Teknikstack
 
-| Lager | Val | Varför |
+| Lager | Val | Varför (intervjuargument) |
 |---|---|---|
-| Frontend | Next.js (App Router) + TypeScript | Modernt, snabbt, deployar till Vercel direkt |
-| UI | Tailwind + shadcn/ui | Snabb, snygg, konsekvent design utan egen designtid |
-| Databas | Supabase (Postgres) | Hostad Postgres + enkel klient, noll infra-strul |
-| AI | Anthropic API (Claude) | Sentiment/tema/åtgärd + veckorapport. Bonus: bolaget är AI-fokuserat och Carl visar att han bygger med Claude/Claude Code |
-| Hosting | Vercel (live URL) | Publik domän de kan surfa in på under intervjun |
-| Automation (stretch) | n8n Cloud | Ett veckoflöde som skickar rapporten – visar automationsförmågan |
+| Dashboard | Next.js + TS + Tailwind + shadcn/ui (befintlig v1) | Återanvänd, redan deployad på Vercel |
+| Data | Supabase (Postgres) | Enkel hostad Postgres; datamodellen är poängen, inte plattformen |
+| Agent | Python, tool-calling-loop byggd från grunden (Anthropic SDK) | Visar förståelse för mekaniken – kan förklara varje steg och varje failure |
+| Integration | Salesforce Developer Edition, REST API (Case-objekt) | Riktig action i riktig Salesforce-miljö = casets kärna |
+| Observability | Langfuse (self-serve) | Trace per körning: tools, latens, kostnad, utfall |
+| Evals | Eget eval-set (10–15 märkta recensioner) + pytest | "Engineering rigor" – mätbar träffsäkerhet, regressionsskydd |
 
-Carls egen styrka ligger i **Python, data, integrationer och pipelines** – inte frontend. Det är okej att frontend är Claude Code-assisterad; var ärlig med det och led samtalet mot den riktiga edgen (data, integration, drift) i intervjun.
+Carls edge är **Python, data, integrationer, pipelines**. Frontend är Claude Code-assisterad – var öppen med det och styr samtalet mot agent/data/integration.
 
-## 5. Scope för veckan
+## 5. Definition of done
 
-**Grund (måste finnas):**
-1. **Översikt** – alla krogar: snittbetyg, antal omdömen, trendpil.
-2. **Per restaurang** – omdömeslista där varje omdöme redan är AI-kategoriserat (sentiment, tema, summering, föreslagen åtgärd).
-3. **Insikter** – topp-klagomål, topp-beröm, sentiment över tid, jämförelse mellan krogar.
-4. **AI-veckorapport** – knapp som genererar en ledningssammanfattning per krog/koncern.
+- [ ] Flödet körbart end-to-end: ny recension → (vid negativ) ett Case syns i Salesforce-UI:t.
+- [ ] Langfuse-trace för varje körning; metrics i dashboarden (behandlade recensioner, andel Cases, latens, kostnad, eval-score).
+- [ ] Eval-set kört med rapporterad success rate.
+- [ ] Minst ett dokumenterat prompt-failure: trace → rotorsak → fix → förbättrad mätning.
+- [ ] README på engelska med arkitekturdiagram + 3-min demovideo.
+- [ ] 3–4 ADRs (synthetic data, tool-loop from scratch, Salesforce via REST, Langfuse).
 
-**Stretch (om tid finns):**
-5. "Fråga datan"-ruta (enkel, ingen vektor-DB – skicka aggregerad data till Claude).
-6. n8n-flöde som skickar veckorapporten via mail/Slack varje måndag.
+## 6. Intervju-talking points (förbered)
 
-## 6. Dataschema (Supabase)
-
-- `restaurants` – id, namn, område, ev. logotyp/färg.
-- `reviews` – id, restaurant_id, betyg (1–5), text, källa, datum.
-- `review_analysis` – review_id, sentiment (positive/neutral/negative), category (service/food/waiting_time/atmosphere/price/booking/other), summary, suggested_action.
-- `weekly_summaries` – id, restaurant_id (nullable för koncern), vecka, sammanfattning, skapad.
-
-## 7. Demo-dagens talking points (förbered dessa)
-
-- Vad som är mockat vs. riktigt, och **varför** vi valde syntetisk data (omdömessvaret ovan).
-- Hur det kopplas till **Maîtres riktiga betygsdata** och officiella API:er i produktion.
-- **Kostnad** per AI-anrop och hur man håller den nere (förberäkning, batching, billigare modell för triage).
-- **GDPR/dataintegritet** vid gästdata mot LLM – vad som kan köras lokalt/anonymiseras.
-- **Nästa steg om de anställde dig imorgon**: vilka 2–3 interna processer du skulle AI-stötta först.
-
-## 8. Hur Claude Code ska jobba (arbetssätt)
-
-Claude Code agerar som en **senior men pedagogisk** kodpartner. För varje steg:
-1. Förklara målet.
-2. Förklara den tekniska approachen kort.
-3. Gör **små** ändringar.
-4. Säg vilka filer som ändrats.
-5. Hjälp Carl köra och testa resultatet.
-6. Undvik stora rewrites; bygg inkrementellt.
-7. Hjälp Carl **förstå** koden, inte bara generera den.
-
-## 9. Dagsplan (riktmärke)
-
-- **Dag 1 (idag):** repo + Next.js-scaffold + Tailwind/shadcn + Supabase-projekt + schema + tom app **live på Vercel** + datagenerator.
-- **Dag 2:** AI-analyspipeline (förberäkna + spara) + översikt + per-restaurang-vy.
-- **Dag 3:** insikter + AI-veckorapport + design-polish (deras varumärken).
-- **Dag 4:** buffert/stretch (fråga datan, n8n) + repetera demon + spika talking points.
+- Varför tool-loopen är byggd från grunden och hur den fungerar steg för steg.
+- Prompt-failure-berättelsen: vad hände, vad visade tracet, vad ändrades.
+- Hur lösningen flyttar till en riktig kund: Snowflake/Databricks som datalager, Agentforce custom actions istället för rå REST, credentials-hantering (inkl. lärdomen från token-saneringen i detta repo).
+- Kostnad per körning och hur den hålls nere (modellval för triage, batching).
+- GDPR: gästdata mot LLM, anonymisering, vad som kan hållas lokalt.
+- Scoping-filosofin: ett flöde production-ready > fem prototyper ("sketch to deployable in days").
+- Arbetsprocessen i sig: PR-flöde, CI, ADRs, medveten skuld-hantering (issues #45, dark mode) – "så här inför man kvalitetsgrindar i ett levande repo".
