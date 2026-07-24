@@ -30,12 +30,12 @@ class SalesforceClient:
         self._http = http_client or httpx.Client()
         self._token: str | None = None
 
-    def _instance_url(self) -> str:
+    def instance_url(self) -> str:
         return os.environ["SF_INSTANCE_URL"].rstrip("/")
 
     def _authenticate(self) -> str:
         response = self._http.post(
-            f"{self._instance_url()}/services/oauth2/token",
+            f"{self.instance_url()}/services/oauth2/token",
             data={
                 "grant_type": "client_credentials",
                 "client_id": os.environ["SF_CLIENT_ID"],
@@ -65,11 +65,11 @@ class SalesforceClient:
 
     def request(self, method: str, path: str, **kwargs) -> httpx.Response:
         """path is relative to /services/data/{API_VERSION}, e.g. '/sobjects/Case'."""
-        url = f"{self._instance_url()}/services/data/{API_VERSION}{path}"
+        url = f"{self.instance_url()}/services/data/{API_VERSION}{path}"
         return self._send(method, url, **kwargs)
 
     def get_userinfo(self) -> dict:
-        response = self._send("GET", f"{self._instance_url()}/services/oauth2/userinfo")
+        response = self._send("GET", f"{self.instance_url()}/services/oauth2/userinfo")
         response.raise_for_status()
         return response.json()
 
