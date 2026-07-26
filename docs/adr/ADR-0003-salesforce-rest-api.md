@@ -117,3 +117,13 @@ One tradeoff accepted: Salesforce's upsert returns no body on `204`
 `updated` outcome without a second round trip. Not fetched here, to keep
 the upsert a single call — the trade favors staying idempotent-in-one-call
 over always returning a fully-populated result on every outcome.
+
+**Correction (same day):** the first version of this fix also set
+`Gastpuls_Review_Id__c` in the PATCH body alongside putting it in the URL.
+Salesforce's real API rejects that combination
+(`INVALID_FIELD: "should not be specified in the sobject data"`) — an
+upsert's external ID value is supplied by the URL segment only. Caught by
+running the demo batch against the live org post-merge, before any Case
+was written (the org was cleared and the run failed cleanly on all 5
+medium-severity calls, no partial writes). Fixed by dropping the field
+from the request body; it remains the URL's job to identify the record.

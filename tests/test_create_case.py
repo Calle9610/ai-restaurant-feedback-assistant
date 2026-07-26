@@ -96,7 +96,9 @@ def test_high_severity_creates_case_with_correct_field_mapping():
     payload = kwargs["json"]
     assert payload["Subject"] == "[Gästpuls] Fiktiva Kroken: negative review (1/5)"
     assert payload["Priority"] == "High"
-    assert payload[REVIEW_ID_FIELD] == "r1"
+    # Salesforce rejects an upsert PATCH that repeats the external ID field
+    # in the body — the review_id lives in the URL only.
+    assert REVIEW_ID_FIELD not in payload
     assert "otrevlig" in payload["Description"]
     assert "Tack för din feedback" in payload["Description"]
     assert "review_id" not in payload["Description"].lower()

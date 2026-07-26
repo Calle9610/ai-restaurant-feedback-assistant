@@ -120,6 +120,9 @@ def run(
 
     client = salesforce_client or SalesforceClient()
 
+    # The external ID value goes in the URL only — Salesforce rejects an
+    # upsert PATCH that also repeats the external ID field in the body
+    # (INVALID_FIELD: "should not be specified in the sobject data").
     response = client.request(
         "PATCH",
         f"/sobjects/Case/{REVIEW_ID_FIELD}/{quote(review_id)}",
@@ -127,7 +130,6 @@ def run(
             "Subject": subject,
             "Description": description,
             "Priority": severity.capitalize(),
-            REVIEW_ID_FIELD: review_id,
         },
     )
 
