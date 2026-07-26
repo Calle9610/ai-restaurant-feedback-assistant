@@ -1,0 +1,114 @@
+[
+  {
+    "review_id": "0222d477-f1f7-498c-a22d-9894038bc70f",
+    "restaurant": "Ankarplatsen",
+    "rating": 3,
+    "text": "Besökte med jobbet V23. Pulled pork för tre av oss – alla fick exakt samma kommentar: torrt kött och bröd som inte håller ihop. Verkar vara ett strukturproblem i köket.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "5f29ec3f-9a5e-414a-b328-cea67045467b",
+    "restaurant": "Tunnbindaren",
+    "rating": 1,
+    "text": "Oförskämt bemötande av en av servitörerna. Vi kände oss som besvär från vi satte oss till vi betalade. Maten var genomsnittlig. Går inte dit igen.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "10178848-dd03-46fb-9d55-2f28ce7ab903",
+    "restaurant": "Tunnbindaren",
+    "rating": 4,
+    "text": "God mat och snabb service under lunchen. Middagen tog däremot längre tid. Lite otydlig service kvällstid.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "c87eb495-cc95-49fb-9808-bb32c1c01d59",
+    "restaurant": "Envoyén",
+    "rating": 1,
+    "text": "Betalade 2 200 kr per person för en middag som var genomsnittlig. Servitören var arrogant och fick oss att känna oss oönskade. Rekommenderar inte.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "0533ab19-63e9-4ce8-b3ac-da5327e5718a",
+    "restaurant": "Kobo",
+    "rating": 2,
+    "text": "En sushirätt var undertempererad och när vi påpekade det fick vi 'den ska vara så'. Det är inte acceptabelt när man betalar den här prisnivån.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "9ef4c49d-3f2e-45e1-bc08-375ac60abe04",
+    "restaurant": "Tunnbindaren Grill",
+    "rating": 5,
+    "text": "Ribeye för 395 kr med salladsbuffé och surdegsbröd ingår. Köttet var mört och stekgraden exakt som beställt. Bättre än de flesta steakhouses i stan.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "75ea251f-b648-4d99-9fef-6b1d3f9035b3",
+    "restaurant": "Envoyén",
+    "rating": 2,
+    "text": "Kände oss ignorerade under hela middagen. Fick fråga om vatten tre gånger. Maten var god men service på den nivån är inte acceptabelt i den priskategorin.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "5f35d901-213e-4092-9b9b-46fe1fb40348",
+    "restaurant": "Kobo",
+    "rating": 1,
+    "text": "Bokat bord bekräftades men när vi anlände hade de gett bort det. Erbjöds att vänta 1,5 timme. Gick hem och åt pizza istället. Håller inte måttet.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "d078ad4b-d559-4cc2-866a-438fd02485a2",
+    "restaurant": "Tunnbindaren Grill",
+    "rating": 2,
+    "text": "Besöket för tre månader sedan var riktigt dåligt – segt kött och frånvarande service. Hör att det blivit bättre men det gamla besöket sitter kvar.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "b3eae4e7-b6a2-4daa-99c7-eb2c2c2cdf39",
+    "restaurant": "Tunnbindaren",
+    "rating": 5,
+    "text": "Klassisk stockholmskrog på sitt bästa. Köttbullarna med potatismos är de bästa jag ätit – perfekt kryddade och lagom mäktiga. Personalen kände igen oss och välkomnade oss värmt. Absolut ett återbesök.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "23f57380-6db0-4a2f-9e20-1a0964cd439b",
+    "restaurant": "Tunnbindaren",
+    "rating": 3,
+    "text": "Mat: 4/5. Service: 2/5. Servitören missade vår beställning och vi fick påminna tre gånger. Förstår inte hur det kan bli så slappt på ett konstant fullt ställe.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "4726fd98-6630-43ee-96d2-42b1ab237c49",
+    "restaurant": "Kobo",
+    "rating": 5,
+    "text": "Bästa sushiupplevelsen i Stockholm. Chefens specialrulle med tryffelriven och wagyu är en sensation. Atmosfären är livlig och bartenderna är riktiga konstnärer.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "00ab1cb7-1dca-438f-b91c-b8e2e8d7e66d",
+    "restaurant": "Tunnbindaren Grill",
+    "rating": 2,
+    "text": "Fick välstekt biff när jag beställde medium rare. Tog 20 minuter att få en ny och sällskapet hade då ätit klart. Färgade hela kvällen negativt.",
+    "expected_severity": null,
+    "expected_case": null
+  },
+  {
+    "review_id": "35576987-df5e-4a5b-a914-f6d5fc6e5196",
+    "restaurant": "Ankarplatsen",
+    "rating": 2,
+    "text": "Pulled pork-burgaren var urusel – torrt kött, bröd som föll isär och kalla pommes. Betalde 175 kr. Servitören verkade van vid klagomålet. Känt problem som inte åtgärdats.",
+    "expected_severity": null,
+    "expected_case": null
+  }
+]
