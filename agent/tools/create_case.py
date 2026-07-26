@@ -16,6 +16,7 @@ from urllib.parse import quote
 
 from agent.salesforce_client import SalesforceClient
 from agent.tools.get_context import fetch_context
+from agent.tracing import Tracer, get_tracer
 
 logger = logging.getLogger(__name__)
 
@@ -79,81 +80,99 @@ def run(
     reasoning: str = "",
     supabase_client=None,
     salesforce_client=None,
+    tracer: Tracer | None = None,
+    session_id: str | None = None,
 ) -> str:
+    tracer = tracer or get_tracer()
     severity = severity.strip().lower()
     if severity not in SEVERITY_ORDER:
         raise CreateCaseError(
             f"Unknown severity: {severity!r}. Expected one of {sorted(SEVERITY_ORDER)}."
         )
 
-    if SEVERITY_ORDER[severity] < SEVERITY_ORDER[CASE_CREATION_THRESHOLD]:
-        logger.info(
-            "create_case skipped: review_id=%s severity=%s below threshold=%s",
-            review_id,
-            severity,
-            CASE_CREATION_THRESHOLD,
-        )
-        return json.dumps(
-            {
-                "review_id": review_id,
-                "status": "skipped",
-                "reason": (
-                    f"severity '{severity}' is below the case-creation "
-                    f"threshold ('{CASE_CREATION_THRESHOLD}')"
-                ),
-            },
-            ensure_ascii=False,
-        )
+    with tracer.trace(
+        "create_case",
+        metadata={"review_id": review_id, "severity": severity},
+        session_id=session_id,
+    ) as trace:
+        if SEVERITY_ORDER[severity] < SEVERITY_ORDER[CASE_CREATION_THRESHOLD]:
+            logger.info(
+                "create_case skipped: review_id=%s severity=%s below threshold=%s",
+                review_id,
+                severity,
+                CASE_CREATION_THRESHOLD,
+            )
+            trace.set_outcome(tags=["outcome:skipped"], metadata={"outcome": "skipped"})
+            return json.dumps(
+                {
+                    "review_id": review_id,
+                    "status": "skipped",
+                    "reason": (
+                        f"severity '{severity}' is below the case-creation "
+                        f"threshold ('{CASE_CREATION_THRESHOLD}')"
+                    ),
+                },
+                ensure_ascii=False,
+            )
 
-    context = fetch_context(review_id, supabase_client=supabase_client)
-    review = context["review"]
-    restaurant = context["restaurant"]
+        context = fetch_context(review_id, supabase_client=supabase_client)
+        review = context["review"]
+        restaurant = context["restaurant"]
 
-    subject = CASE_SUBJECT_TEMPLATE.format(restaurant_name=restaurant["name"], rating=review["rating"])
-    description = CASE_DESCRIPTION_TEMPLATE.format(
-        rating=review["rating"],
-        source=review["source"],
-        review_text=review["text"],
-        draft_response=draft_response,
-        reasoning=reasoning or "(not provided)",
-    )
-
-    client = salesforce_client or SalesforceClient()
-
-    # The external ID value goes in the URL only — Salesforce rejects an
-    # upsert PATCH that also repeats the external ID field in the body
-    # (INVALID_FIELD: "should not be specified in the sobject data").
-    response = client.request(
-        "PATCH",
-        f"/sobjects/Case/{REVIEW_ID_FIELD}/{quote(review_id)}",
-        json={
-            "Subject": subject,
-            "Description": description,
-            "Priority": severity.capitalize(),
-        },
-    )
-
-    if response.status_code == 201:
-        case_id = response.json()["id"]
-        case_url = f"{client.instance_url()}/lightning/r/Case/{case_id}/view"
-        logger.info(
-            "create_case created: review_id=%s severity=%s case_id=%s", review_id, severity, case_id
-        )
-        return json.dumps(
-            {"review_id": review_id, "status": "created", "case_id": case_id, "case_url": case_url},
-            ensure_ascii=False,
+        subject = CASE_SUBJECT_TEMPLATE.format(restaurant_name=restaurant["name"], rating=review["rating"])
+        description = CASE_DESCRIPTION_TEMPLATE.format(
+            rating=review["rating"],
+            source=review["source"],
+            review_text=review["text"],
+            draft_response=draft_response,
+            reasoning=reasoning or "(not provided)",
         )
 
-    if response.status_code == 204:
-        # Upsert-on-update returns no body, so no case_id/case_url is available
-        # here without a second round trip — deliberately not fetched; see
-        # ADR-0003.
-        logger.info(
-            "create_case updated existing case: review_id=%s severity=%s", review_id, severity
-        )
-        return json.dumps(
-            {"review_id": review_id, "status": "updated"},
-            ensure_ascii=False,
-        )
+        client = salesforce_client or SalesforceClient()
 
-    raise CreateCaseError(f"Salesforce API error ({response.status_code}): {response.json()}")
+        # The external ID value goes in the URL only — Salesforce rejects an
+        # upsert PATCH that also repeats the external ID field in the body
+        # (INVALID_FIELD: "should not be specified in the sobject data").
+        with trace.span(
+            "salesforce.upsert_case",
+            input={"subject": subject, "priority": severity.capitalize()},
+        ) as span:
+            response = client.request(
+                "PATCH",
+                f"/sobjects/Case/{REVIEW_ID_FIELD}/{quote(review_id)}",
+                json={
+                    "Subject": subject,
+                    "Description": description,
+                    "Priority": severity.capitalize(),
+                },
+            )
+            span.update(output={"status_code": response.status_code})
+
+        trace.set_outcome(metadata={"restaurant": restaurant["name"]})
+
+        if response.status_code == 201:
+            case_id = response.json()["id"]
+            case_url = f"{client.instance_url()}/lightning/r/Case/{case_id}/view"
+            logger.info(
+                "create_case created: review_id=%s severity=%s case_id=%s", review_id, severity, case_id
+            )
+            trace.set_outcome(tags=["outcome:created"], metadata={"outcome": "created", "case_id": case_id})
+            return json.dumps(
+                {"review_id": review_id, "status": "created", "case_id": case_id, "case_url": case_url},
+                ensure_ascii=False,
+            )
+
+        if response.status_code == 204:
+            # Upsert-on-update returns no body, so no case_id/case_url is available
+            # here without a second round trip — deliberately not fetched; see
+            # ADR-0003.
+            logger.info(
+                "create_case updated existing case: review_id=%s severity=%s", review_id, severity
+            )
+            trace.set_outcome(tags=["outcome:updated"], metadata={"outcome": "updated"})
+            return json.dumps(
+                {"review_id": review_id, "status": "updated"},
+                ensure_ascii=False,
+            )
+
+        raise CreateCaseError(f"Salesforce API error ({response.status_code}): {response.json()}")
