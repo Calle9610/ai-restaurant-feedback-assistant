@@ -40,8 +40,8 @@ def _run_review_id(review_id: str, model: str) -> None:
     )
     if case_result["status"] == "created":
         print(f"case: created {case_result['case_id']} -> {case_result['case_url']}")
-    elif case_result["status"] == "already_exists":
-        print(f"case: already exists ({case_result['case_id']})")
+    elif case_result["status"] == "updated":
+        print("case: updated existing case")
     else:
         print(f"case: skipped — {case_result['reason']}")
 
