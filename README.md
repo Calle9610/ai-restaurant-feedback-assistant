@@ -49,6 +49,11 @@ python -m agent.run --prompt "..."
 python -m agent.run --review-id <uuid>
 ```
 
+`--review-id` also requires a Salesforce Developer Edition org — see
+[`docs/salesforce-setup.md`](docs/salesforce-setup.md) for a reproducible
+setup guide (connected app, OAuth, the `Gastpuls_Review_Id__c` field and its
+permissions).
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

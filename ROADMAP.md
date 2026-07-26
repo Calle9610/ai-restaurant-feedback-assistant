@@ -44,14 +44,14 @@
 ## M8 – Salesforce-integrationen (Pass 3) ⭐ casets kärna
 
 **Issue: Developer Edition-org + auth**
-- [ ] Org skapad, connected app konfigurerad, OAuth-flöde fungerar från Python
-- [ ] Credentials endast via env; dokumenterat i `.env.example`
+- [x] Org skapad, connected app konfigurerad, OAuth-flöde fungerar från Python
+- [x] Credentials endast via env; dokumenterat i `.env.example`
 
 **Issue: `create_case`-toolet**
-- [ ] Skapar Case via REST API med mappade fält (text → description, severity → priority)
-- [ ] Anropas endast vid negativ recension över tröskel; varje anrop loggas med beslutsunderlag
-- [ ] End-to-end-test: ny recension → Case syns i Salesforce-UI:t
-- [ ] ADR-0003: REST API nu, Agentforce custom action som nästa steg
+- [x] Skapar Case via REST API med mappade fält (text → description, severity → priority)
+- [x] Anropas endast vid negativ recension över tröskel; varje anrop loggas med beslutsunderlag
+- [x] End-to-end-test: ny recension → Case syns i Salesforce-UI:t
+- [x] ADR-0003: REST API nu, Agentforce custom action som nästa steg
 
 ## M9 – Observability & evals (Pass 4)
 
