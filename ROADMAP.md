@@ -60,8 +60,8 @@
 - [x] ADR-0004: observability-val
 
 **Issue: Eval-set**
-- [ ] 10–15 recensioner märkta med facit (severity + Case ja/nej)
-- [ ] Eval-körning rapporterar success rate; körbar via pytest
+- [x] 10–15 recensioner märkta med facit (severity + Case ja/nej)
+- [x] Eval-körning rapporterar success rate; körbar via pytest
 - [ ] Minst ett prompt-failure dokumenterat: trace → rotorsak → fix → ny mätning
 
 **Issue: Metrics i dashboarden**
