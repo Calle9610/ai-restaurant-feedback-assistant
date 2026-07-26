@@ -150,28 +150,41 @@ def run(
 
         trace.set_outcome(metadata={"restaurant": restaurant["name"]})
 
-        if response.status_code == 201:
-            case_id = response.json()["id"]
-            case_url = f"{client.instance_url()}/lightning/r/Case/{case_id}/view"
-            logger.info(
-                "create_case created: review_id=%s severity=%s case_id=%s", review_id, severity, case_id
-            )
-            trace.set_outcome(tags=["outcome:created"], metadata={"outcome": "created", "case_id": case_id})
-            return json.dumps(
-                {"review_id": review_id, "status": "created", "case_id": case_id, "case_url": case_url},
-                ensure_ascii=False,
-            )
-
         if response.status_code == 204:
-            # Upsert-on-update returns no body, so no case_id/case_url is available
-            # here without a second round trip — deliberately not fetched; see
-            # ADR-0003.
+            # Documented no-body update response: no case_id/case_url without
+            # a second round trip — deliberately not fetched; see ADR-0003.
             logger.info(
                 "create_case updated existing case: review_id=%s severity=%s", review_id, severity
             )
             trace.set_outcome(tags=["outcome:updated"], metadata={"outcome": "updated"})
             return json.dumps(
                 {"review_id": review_id, "status": "updated"},
+                ensure_ascii=False,
+            )
+
+        if response.status_code in (200, 201):
+            # Upsert responses carry a "created" boolean that says which
+            # happened — trust that over the status code. Observed live: an
+            # update can come back as 200 with "created": false instead of
+            # the documented bare 204, so the status code alone isn't a
+            # reliable signal. Fall back to the status code only if a
+            # response body omits the field entirely (not observed, but
+            # cheap insurance against another undocumented shape). See the
+            # ADR-0003 amendment for the incident this fixes.
+            body = response.json()
+            created = body.get("created")
+            if created is None:
+                created = response.status_code == 201
+            status = "created" if created else "updated"
+
+            case_id = body["id"]
+            case_url = f"{client.instance_url()}/lightning/r/Case/{case_id}/view"
+            logger.info(
+                "create_case %s: review_id=%s severity=%s case_id=%s", status, review_id, severity, case_id
+            )
+            trace.set_outcome(tags=[f"outcome:{status}"], metadata={"outcome": status, "case_id": case_id})
+            return json.dumps(
+                {"review_id": review_id, "status": status, "case_id": case_id, "case_url": case_url},
                 ensure_ascii=False,
             )
 

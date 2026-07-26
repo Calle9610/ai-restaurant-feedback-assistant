@@ -36,17 +36,27 @@ pip install -r requirements-dev.txt
 
 Copy `.env.local.example` to `.env.local` and fill in the Supabase and Anthropic values (`AGENT_ANTHROPIC_API_KEY` and `AGENT_MODEL` are the agent's own, separate from the webapp's `ANTHROPIC_API_KEY`). `.venv/` is gitignored — recreate it, don't commit it.
 
+**Always invoke Python explicitly via the venv's own interpreter** —
+`.venv/bin/python` (macOS/Linux) or `.venv\Scripts\python.exe` (Windows) —
+rather than a bare `python`/`pytest`. Whether "activation" actually puts the
+venv first on `PATH` depends on your shell and session; a bare `python` that
+silently falls back to the system interpreter still runs, just without any
+of the project's dependencies installed — the failure is a confusing
+`ModuleNotFoundError` for a package you know you installed, not an obvious
+"wrong environment" error.
+
 Run the tests (mocked, no API key needed):
 
 ```bash
-pytest
+.venv/bin/python -m pytest        # macOS/Linux
+.venv\Scripts\python.exe -m pytest   # Windows
 ```
 
 Run the agent live (requires a real `AGENT_ANTHROPIC_API_KEY`, not run in CI):
 
 ```bash
-python -m agent.run --prompt "..."
-python -m agent.run --review-id <uuid>
+.venv/bin/python -m agent.run --prompt "..."          # macOS/Linux
+.venv\Scripts\python.exe -m agent.run --review-id <uuid>   # Windows
 ```
 
 `--review-id` also requires a Salesforce Developer Edition org — see
