@@ -56,8 +56,8 @@
 ## M9 – Observability & evals (Pass 4)
 
 **Issue: Langfuse-tracing**
-- [ ] Varje agent-körning ger trace: tools, latens per steg, tokenkostnad, utfall
-- [ ] ADR-0004: observability-val
+- [x] Varje agent-körning ger trace: tools, latens per steg, tokenkostnad, utfall
+- [x] ADR-0004: observability-val
 
 **Issue: Eval-set**
 - [ ] 10–15 recensioner märkta med facit (severity + Case ja/nej)

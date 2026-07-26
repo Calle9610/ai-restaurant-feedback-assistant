@@ -142,3 +142,24 @@ def test_parallel_tool_calls_map_results_to_correct_tool_use_id():
     tool_results = client.messages.calls[1]["messages"][-1]["content"]
     by_id = {r["tool_use_id"]: r["content"] for r in tool_results}
     assert by_id == {"tu_a": "first", "tu_b": "second"}
+
+
+def test_loop_behaves_identically_with_tracing_unconfigured(monkeypatch):
+    """Tracing must never be a prerequisite for the loop to work. CI and
+    pytest never set LANGFUSE_*, but this pins the contract explicitly rather
+    than relying on it being incidentally true in this environment."""
+    monkeypatch.delenv("LANGFUSE_PUBLIC_KEY", raising=False)
+    monkeypatch.delenv("LANGFUSE_SECRET_KEY", raising=False)
+
+    responses = [
+        FakeResponse(
+            content=[FakeToolUseBlock(id="tu_1", name="echo", input={"text": "hej"})],
+            stop_reason="tool_use",
+        ),
+        FakeResponse(content=[FakeTextBlock(text="hej")], stop_reason="end_turn"),
+    ]
+    client = FakeClient(responses)
+
+    result = run_loop("say hej", model="test-model", client=client)
+
+    assert result.final_text == "hej"

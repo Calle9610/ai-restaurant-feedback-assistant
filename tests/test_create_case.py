@@ -1,4 +1,5 @@
 import json
+from contextlib import contextmanager
 
 import pytest
 
@@ -66,6 +67,49 @@ class FakeSalesforceClient:
 
     def instance_url(self):
         return "https://example-org.my.salesforce.com"
+
+
+class FakeSpan:
+    def __init__(self):
+        self.updates = []
+
+    def update(self, **fields):
+        self.updates.append(fields)
+
+
+class FakeTraceHandle:
+    def __init__(self):
+        self.spans = []
+        self.outcomes = []
+
+    @contextmanager
+    def span(self, name, **fields):
+        s = FakeSpan()
+        self.spans.append((name, fields, s))
+        yield s
+
+    @contextmanager
+    def generation(self, name, *, model, **fields):
+        s = FakeSpan()
+        self.spans.append((name, fields, s))
+        yield s
+
+    def set_outcome(self, *, tags=None, metadata=None):
+        self.outcomes.append({"tags": tags, "metadata": metadata})
+
+
+class FakeTracer:
+    def __init__(self):
+        self.traces = []
+
+    @contextmanager
+    def trace(self, name, **attrs):
+        handle = FakeTraceHandle()
+        self.traces.append((name, attrs, handle))
+        yield handle
+
+    def flush(self):
+        pass
 
 
 def test_high_severity_creates_case_with_correct_field_mapping():
@@ -230,3 +274,71 @@ def test_unknown_severity_raises_create_case_error_not_silent_skip():
             salesforce_client=sf,
         )
     assert sf.calls == []
+
+
+def test_created_outcome_is_recorded_on_the_trace():
+    sf = FakeSalesforceClient([FakeSalesforceResponse(201, {"id": "500xa", "success": True, "errors": []})])
+    tracer = FakeTracer()
+
+    run(
+        "r1",
+        severity="high",
+        draft_response="...",
+        reasoning="...",
+        supabase_client=FakeSupabaseClient(REVIEW_ROW),
+        salesforce_client=sf,
+        tracer=tracer,
+    )
+
+    (trace_name, trace_attrs, handle), = tracer.traces
+    assert trace_name == "create_case"
+    assert trace_attrs["metadata"] == {"review_id": "r1", "severity": "high"}
+
+    outcome_tags = [tag for outcome in handle.outcomes for tag in (outcome["tags"] or [])]
+    assert "outcome:created" in outcome_tags
+    outcome_metadata = {}
+    for outcome in handle.outcomes:
+        outcome_metadata.update(outcome["metadata"] or {})
+    assert outcome_metadata["outcome"] == "created"
+    assert outcome_metadata["restaurant"] == "Fiktiva Kroken"
+    assert outcome_metadata["case_id"] == "500xa"
+
+
+def test_updated_outcome_is_recorded_on_the_trace():
+    sf = FakeSalesforceClient([FakeSalesforceResponse(204)])
+    tracer = FakeTracer()
+
+    run(
+        "r1",
+        severity="high",
+        draft_response="...",
+        reasoning="...",
+        supabase_client=FakeSupabaseClient(REVIEW_ROW),
+        salesforce_client=sf,
+        tracer=tracer,
+    )
+
+    (_, _, handle), = tracer.traces
+    outcome_tags = [tag for outcome in handle.outcomes for tag in (outcome["tags"] or [])]
+    assert "outcome:updated" in outcome_tags
+
+
+def test_skipped_outcome_is_recorded_on_the_trace_without_a_salesforce_call():
+    sf = FakeSalesforceClient([])
+    tracer = FakeTracer()
+
+    run(
+        "r1",
+        severity="low",
+        draft_response="...",
+        reasoning="...",
+        supabase_client=FakeSupabaseClient(REVIEW_ROW),
+        salesforce_client=sf,
+        tracer=tracer,
+    )
+
+    assert sf.calls == []
+    (_, _, handle), = tracer.traces
+    outcome_tags = [tag for outcome in handle.outcomes for tag in (outcome["tags"] or [])]
+    assert "outcome:skipped" in outcome_tags
+    assert handle.spans == []  # no salesforce.upsert_case span opened below threshold

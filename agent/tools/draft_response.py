@@ -13,6 +13,7 @@ import json
 from agent.anthropic_client import get_client as get_anthropic_client
 from agent.anthropic_client import get_model
 from agent.tools.get_context import fetch_context
+from agent.tracing import Tracer, get_tracer, usage_and_cost_fields
 
 SCHEMA = {
     "name": "draft_response",
@@ -138,21 +139,48 @@ def run(
     supabase_client=None,
     anthropic_client=None,
     model: str | None = None,
+    tracer: Tracer | None = None,
+    session_id: str | None = None,
 ) -> str:
-    context = fetch_context(review_id, supabase_client=supabase_client)
-    prompt = _build_prompt(context)
+    tracer = tracer or get_tracer()
+    resolved_model = get_model(model)
 
-    client = anthropic_client or get_anthropic_client()
-    response = client.messages.create(
-        model=get_model(model),
-        max_tokens=1024,
-        tools=[RESPONSE_TOOL_SCHEMA],
-        tool_choice={"type": "tool", "name": "submit_classification"},
-        messages=[{"role": "user", "content": prompt}],
-    )
+    with tracer.trace(
+        "draft_response",
+        metadata={"review_id": review_id},
+        session_id=session_id,
+    ) as trace:
+        context = fetch_context(review_id, supabase_client=supabase_client)
+        prompt = _build_prompt(context)
 
-    tool_use = next(block for block in response.content if block.type == "tool_use")
-    classification = _validate_and_normalize(tool_use.input)
+        client = anthropic_client or get_anthropic_client()
+        with trace.generation("anthropic.messages.create", model=resolved_model, input=prompt) as gen:
+            response = client.messages.create(
+                model=resolved_model,
+                max_tokens=1024,
+                tools=[RESPONSE_TOOL_SCHEMA],
+                tool_choice={"type": "tool", "name": "submit_classification"},
+                messages=[{"role": "user", "content": prompt}],
+            )
+            usage = getattr(response, "usage", None)
+            input_tokens = getattr(usage, "input_tokens", 0) or 0
+            output_tokens = getattr(usage, "output_tokens", 0) or 0
+
+            tool_use = next(block for block in response.content if block.type == "tool_use")
+            classification = _validate_and_normalize(tool_use.input)
+
+            gen.update(
+                output=classification,
+                **usage_and_cost_fields(resolved_model, input_tokens, output_tokens),
+            )
+
+        trace.set_outcome(
+            tags=[f"severity:{classification['severity']}"],
+            metadata={
+                "restaurant": context["restaurant"]["name"],
+                "severity": classification["severity"],
+            },
+        )
 
     result = {"review_id": review_id, **classification}
     return json.dumps(result, ensure_ascii=False)
