@@ -7,6 +7,25 @@ function rndDate(weeksBack = 8): string {
   return new Date(Date.now() - Math.random() * ms).toISOString();
 }
 
+// Fiktiv källfördelning: bokningsapp är restauranggruppens egen bokningsapp
+// och den dominerande insamlingskanalen, övriga ger trovärdig spridning.
+const SOURCE_WEIGHTS: [string, number][] = [
+  ['bokningsapp', 0.55],
+  ['google', 0.25],
+  ['webb', 0.12],
+  ['direkt', 0.08],
+];
+
+function rndSource(): string {
+  const r = Math.random();
+  let acc = 0;
+  for (const [source, weight] of SOURCE_WEIGHTS) {
+    acc += weight;
+    if (r < acc) return source;
+  }
+  return SOURCE_WEIGHTS[SOURCE_WEIGHTS.length - 1][0];
+}
+
 type ReviewRow = { rating: 1 | 2 | 3 | 4 | 5; text: string };
 
 // ─── Tunnbindaren ─────────────────────────────────────────────────────────────
@@ -239,11 +258,11 @@ async function seed() {
   if (delErr) { console.error(delErr); process.exit(1); }
 
   const rows = [
-    ...tunnbindaren.map((r)      => ({ ...r, restaurant_id: requireId('Tunnbindaren'),       source: 'maîtres', created_at: rndDate() })),
-    ...envoyen.map((r)           => ({ ...r, restaurant_id: requireId('Envoyén'),            source: 'maîtres', created_at: rndDate() })),
-    ...kobo.map((r)              => ({ ...r, restaurant_id: requireId('Kobo'),               source: 'maîtres', created_at: rndDate() })),
-    ...tunnbindarenGrill.map((r) => ({ ...r, restaurant_id: requireId('Tunnbindaren Grill'), source: 'maîtres', created_at: rndDate() })),
-    ...ankarplatsen.map((r)      => ({ ...r, restaurant_id: requireId('Ankarplatsen'),       source: 'maîtres', created_at: rndDate() })),
+    ...tunnbindaren.map((r)      => ({ ...r, restaurant_id: requireId('Tunnbindaren'),       source: rndSource(), created_at: rndDate() })),
+    ...envoyen.map((r)           => ({ ...r, restaurant_id: requireId('Envoyén'),            source: rndSource(), created_at: rndDate() })),
+    ...kobo.map((r)              => ({ ...r, restaurant_id: requireId('Kobo'),               source: rndSource(), created_at: rndDate() })),
+    ...tunnbindarenGrill.map((r) => ({ ...r, restaurant_id: requireId('Tunnbindaren Grill'), source: rndSource(), created_at: rndDate() })),
+    ...ankarplatsen.map((r)      => ({ ...r, restaurant_id: requireId('Ankarplatsen'),       source: rndSource(), created_at: rndDate() })),
   ];
 
   const { error: insErr } = await db.from('reviews').insert(rows);
