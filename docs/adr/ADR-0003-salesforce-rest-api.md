@@ -112,11 +112,14 @@ The `Gästpuls review_id: {review_id}` line was removed from the Case
 cross-reference back to Supabase, which is now redundant with a proper
 (and queryable, reportable) field on the Case object itself.
 
-One tradeoff accepted: Salesforce's upsert returns no body on `204`
-(update), so `create_case` cannot return a `case_id`/`case_url` for the
-`updated` outcome without a second round trip. Not fetched here, to keep
-the upsert a single call — the trade favors staying idempotent-in-one-call
-over always returning a fully-populated result on every outcome.
+One tradeoff accepted: on the documented no-body `204` update response,
+`create_case` cannot return a `case_id`/`case_url` for the `updated`
+outcome without a second round trip, and deliberately doesn't fetch one —
+the trade favors staying idempotent-in-one-call over always returning a
+fully-populated result on every outcome. (When Salesforce's undocumented
+`200`-with-body update response — see the amendment below — is the one
+returned instead, the body already carries the id, so `case_id`/`case_url`
+are included for that path at no extra cost.)
 
 **Correction (same day):** the first version of this fix also set
 `Gastpuls_Review_Id__c` in the PATCH body alongside putting it in the URL.
@@ -127,3 +130,27 @@ running the demo batch against the live org post-merge, before any Case
 was written (the org was cleared and the run failed cleanly on all 5
 medium-severity calls, no partial writes). Fixed by dropping the field
 from the request body; it remains the URL's job to identify the record.
+
+**Second amendment (2026-07-27): the upsert-update response also
+undershoots its own documentation.** Salesforce's REST API docs specify
+`204` (no body) for an upsert-update. In practice, an update can instead
+come back as `200` with a JSON body carrying `"created": false` — observed
+live, not a hypothetical. `create_case` originally branched purely on
+status code (`201` → created, `204` → updated, anything else → error),
+so this legitimate update response fell into the error branch and raised
+`CreateCaseError`.
+
+Fixed by trusting the response body's `created` boolean over the status
+code whenever a body is present, for both `200` and `201`: `created`
+decides `created` vs. `updated`, with the status code used only as a
+fallback if a response body were ever missing that field entirely (not
+observed, but cheap to guard against given the code path has now shown
+its documentation isn't fully reliable). The `204` no-body case is
+unaffected — it's unambiguous and still maps directly to `updated`.
+
+This matters beyond correctness: `create_case`'s outcome
+(`created`/`updated`/`skipped`) is the field Langfuse traces tag and
+aggregate on (ADR-0004), and will drive the M9 eval set and dashboard
+metrics next. A silently wrong outcome would have been wrong data feeding
+those, which is worse than no tracing at all — this fix landed before
+that work for exactly that reason.

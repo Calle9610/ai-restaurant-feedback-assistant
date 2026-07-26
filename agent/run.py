@@ -59,7 +59,10 @@ def _run_review_id(review_id: str, model: str, session_id: str | None) -> None:
         if case_result["status"] == "created":
             print(f"case: created {case_result['case_id']} -> {case_result['case_url']}")
         elif case_result["status"] == "updated":
-            print("case: updated existing case")
+            if "case_id" in case_result:
+                print(f"case: updated {case_result['case_id']} -> {case_result['case_url']}")
+            else:
+                print("case: updated existing case")
         else:
             print(f"case: skipped — {case_result['reason']}")
 

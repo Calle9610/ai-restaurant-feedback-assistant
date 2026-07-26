@@ -204,6 +204,74 @@ def test_second_call_for_same_review_updates_instead_of_duplicating():
     assert path == f"/sobjects/Case/{REVIEW_ID_FIELD}/r1"
 
 
+def test_update_via_200_with_created_false_maps_to_updated():
+    """Salesforce documents 204 (no body) for an upsert update, but has been
+    observed live returning 200 with a body carrying "created": false
+    instead. The status code alone isn't a reliable signal — the "created"
+    field in the body is."""
+    sf = FakeSalesforceClient(
+        [FakeSalesforceResponse(200, {"id": "500existing", "success": True, "errors": [], "created": False})]
+    )
+
+    raw = run(
+        "r1",
+        severity="high",
+        draft_response="...",
+        reasoning="...",
+        supabase_client=FakeSupabaseClient(REVIEW_ROW),
+        salesforce_client=sf,
+    )
+    result = json.loads(raw)
+
+    assert result == {
+        "review_id": "r1",
+        "status": "updated",
+        "case_id": "500existing",
+        "case_url": "https://example-org.my.salesforce.com/lightning/r/Case/500existing/view",
+    }
+
+
+def test_create_via_200_with_created_true_maps_to_created():
+    """The inverse of the 200/created:false case — if Salesforce ever
+    reports a creation via 200 instead of 201, the "created" field must
+    still drive the outcome, not the status code."""
+    sf = FakeSalesforceClient(
+        [FakeSalesforceResponse(200, {"id": "500new", "success": True, "errors": [], "created": True})]
+    )
+
+    raw = run(
+        "r1",
+        severity="high",
+        draft_response="...",
+        reasoning="...",
+        supabase_client=FakeSupabaseClient(REVIEW_ROW),
+        salesforce_client=sf,
+    )
+    result = json.loads(raw)
+
+    assert result["status"] == "created"
+    assert result["case_id"] == "500new"
+
+
+def test_200_response_missing_created_field_falls_back_to_status_code():
+    """Defensive fallback for a body shape that omits "created" entirely —
+    not observed, but status 200 (not 201) should still read as "updated"
+    rather than crash or misreport."""
+    sf = FakeSalesforceClient([FakeSalesforceResponse(200, {"id": "500xa", "success": True, "errors": []})])
+
+    raw = run(
+        "r1",
+        severity="high",
+        draft_response="...",
+        reasoning="...",
+        supabase_client=FakeSupabaseClient(REVIEW_ROW),
+        salesforce_client=sf,
+    )
+    result = json.loads(raw)
+
+    assert result["status"] == "updated"
+
+
 def test_upsert_keys_on_review_id_not_subject():
     """Two different reviews for the same restaurant/rating must not collapse
     into one Case — the bug this fix addresses. Each gets its own PATCH,
