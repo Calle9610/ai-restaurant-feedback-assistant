@@ -2,9 +2,12 @@
 (from a prior draft_response call) is at or above the case-creation
 threshold. Below the threshold is a valid, logged outcome, not an error.
 
-Deduplicates by Subject before writing: the demo gets run against the same
-seed data repeatedly, and a Subject built from restaurant + rating is a
-stable, cheap key to check first via SOQL.
+Deduplicates via upsert on the Gastpuls_Review_Id__c external ID field
+(one PATCH to /sobjects/Case/Gastpuls_Review_Id__c/{review_id}), not a
+SOQL lookup by Subject. Subject (restaurant + rating) collapsed distinct
+reviews that happened to share a restaurant and rating into one Case;
+review_id is the field that's actually unique per review. See ADR-0003
+for why upsert-by-external-ID replaced the query-then-create pattern.
 """
 
 import json
@@ -21,8 +24,9 @@ SCHEMA = {
     "description": (
         "Create a Salesforce Case for a review whose severity is medium or "
         "high. Reviews below the threshold are skipped, not an error. "
-        "Deduplicates: if a Case for the same restaurant/rating already "
-        "exists, returns it instead of creating a duplicate."
+        "Deduplicates by upserting on the review's external ID: a second "
+        "call for the same review_id updates the existing Case instead of "
+        "creating a duplicate."
     ),
     "input_schema": {
         "type": "object",
@@ -46,6 +50,8 @@ SCHEMA = {
 SEVERITY_ORDER = {"low": 0, "medium": 1, "high": 2}
 CASE_CREATION_THRESHOLD = "medium"
 
+REVIEW_ID_FIELD = "Gastpuls_Review_Id__c"
+
 CASE_SUBJECT_TEMPLATE = "[Gästpuls] {restaurant_name}: negative review ({rating}/5)"
 
 CASE_DESCRIPTION_TEMPLATE = """Guest review (rating {rating}/5, source: {source}):
@@ -59,28 +65,11 @@ Draft reply sent to guest:
 \"\"\"
 
 Severity reasoning: {reasoning}
-
-Gästpuls review_id: {review_id}
 """
 
 
 class CreateCaseError(Exception):
-    """Raised when the Salesforce API rejects the query or the create call."""
-
-
-def _raise_for_salesforce_error(response, expected_status: int) -> None:
-    if response.status_code != expected_status:
-        raise CreateCaseError(f"Salesforce API error ({response.status_code}): {response.json()}")
-
-
-def _find_existing_case(client: SalesforceClient, subject: str) -> str | None:
-    escaped_subject = subject.replace("'", "\\'")
-    soql = f"SELECT Id FROM Case WHERE Subject = '{escaped_subject}' LIMIT 1"
-    response = client.request("GET", f"/query?q={quote(soql)}")
-    _raise_for_salesforce_error(response, expected_status=200)
-
-    records = response.json().get("records", [])
-    return records[0]["Id"] if records else None
+    """Raised when the Salesforce API rejects the upsert call."""
 
 
 def run(
@@ -127,34 +116,42 @@ def run(
         review_text=review["text"],
         draft_response=draft_response,
         reasoning=reasoning or "(not provided)",
-        review_id=review_id,
     )
 
     client = salesforce_client or SalesforceClient()
 
-    existing_case_id = _find_existing_case(client, subject)
-    if existing_case_id:
+    response = client.request(
+        "PATCH",
+        f"/sobjects/Case/{REVIEW_ID_FIELD}/{quote(review_id)}",
+        json={
+            "Subject": subject,
+            "Description": description,
+            "Priority": severity.capitalize(),
+            REVIEW_ID_FIELD: review_id,
+        },
+    )
+
+    if response.status_code == 201:
+        case_id = response.json()["id"]
+        case_url = f"{client.instance_url()}/lightning/r/Case/{case_id}/view"
         logger.info(
-            "create_case found existing case: review_id=%s case_id=%s", review_id, existing_case_id
+            "create_case created: review_id=%s severity=%s case_id=%s", review_id, severity, case_id
         )
         return json.dumps(
-            {"review_id": review_id, "status": "already_exists", "case_id": existing_case_id},
+            {"review_id": review_id, "status": "created", "case_id": case_id, "case_url": case_url},
             ensure_ascii=False,
         )
 
-    response = client.request(
-        "POST",
-        "/sobjects/Case",
-        json={"Subject": subject, "Description": description, "Priority": severity.capitalize()},
-    )
-    _raise_for_salesforce_error(response, expected_status=201)
-    case_id = response.json()["id"]
-    case_url = f"{client.instance_url()}/lightning/r/Case/{case_id}/view"
+    if response.status_code == 204:
+        # Upsert-on-update returns no body, so no case_id/case_url is available
+        # here without a second round trip — deliberately not fetched; see
+        # ADR-0003.
+        logger.info(
+            "create_case updated existing case: review_id=%s severity=%s", review_id, severity
+        )
+        return json.dumps(
+            {"review_id": review_id, "status": "updated"},
+            ensure_ascii=False,
+        )
 
-    logger.info(
-        "create_case created: review_id=%s severity=%s case_id=%s", review_id, severity, case_id
-    )
-    return json.dumps(
-        {"review_id": review_id, "status": "created", "case_id": case_id, "case_url": case_url},
-        ensure_ascii=False,
-    )
+    raise CreateCaseError(f"Salesforce API error ({response.status_code}): {response.json()}")

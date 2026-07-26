@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from agent.tools.create_case import CreateCaseError, run
+from agent.tools.create_case import REVIEW_ID_FIELD, CreateCaseError, run
 
 
 class FakeSupabaseResponse:
@@ -47,7 +47,7 @@ REVIEW_ROW = {
 
 
 class FakeSalesforceResponse:
-    def __init__(self, status_code, json_data):
+    def __init__(self, status_code, json_data=None):
         self.status_code = status_code
         self._json = json_data
 
@@ -68,13 +68,8 @@ class FakeSalesforceClient:
         return "https://example-org.my.salesforce.com"
 
 
-NO_EXISTING_CASE = FakeSalesforceResponse(200, {"totalSize": 0, "done": True, "records": []})
-
-
 def test_high_severity_creates_case_with_correct_field_mapping():
-    sf = FakeSalesforceClient(
-        [NO_EXISTING_CASE, FakeSalesforceResponse(201, {"id": "500xa", "success": True, "errors": []})]
-    )
+    sf = FakeSalesforceClient([FakeSalesforceResponse(201, {"id": "500xa", "success": True, "errors": []})])
 
     raw = run(
         "r1",
@@ -93,22 +88,22 @@ def test_high_severity_creates_case_with_correct_field_mapping():
         "case_url": "https://example-org.my.salesforce.com/lightning/r/Case/500xa/view",
     }
 
-    query_call, create_call = sf.calls
-    assert query_call[0] == "GET"
-    assert create_call[0] == "POST"
-    assert create_call[1] == "/sobjects/Case"
+    assert len(sf.calls) == 1
+    method, path, kwargs = sf.calls[0]
+    assert method == "PATCH"
+    assert path == f"/sobjects/Case/{REVIEW_ID_FIELD}/r1"
 
-    payload = create_call[2]["json"]
+    payload = kwargs["json"]
     assert payload["Subject"] == "[Gästpuls] Fiktiva Kroken: negative review (1/5)"
     assert payload["Priority"] == "High"
+    assert payload[REVIEW_ID_FIELD] == "r1"
     assert "otrevlig" in payload["Description"]
     assert "Tack för din feedback" in payload["Description"]
+    assert "review_id" not in payload["Description"].lower()
 
 
 def test_medium_severity_also_creates_a_case():
-    sf = FakeSalesforceClient(
-        [NO_EXISTING_CASE, FakeSalesforceResponse(201, {"id": "500xb", "success": True, "errors": []})]
-    )
+    sf = FakeSalesforceClient([FakeSalesforceResponse(201, {"id": "500xb", "success": True, "errors": []})])
 
     raw = run(
         "r1",
@@ -121,8 +116,8 @@ def test_medium_severity_also_creates_a_case():
     result = json.loads(raw)
 
     assert result["status"] == "created"
-    _, create_call = sf.calls
-    assert create_call[2]["json"]["Priority"] == "Medium"
+    (_, _, kwargs), = sf.calls
+    assert kwargs["json"]["Priority"] == "Medium"
 
 
 def test_low_severity_is_skipped_without_any_salesforce_call():
@@ -142,10 +137,8 @@ def test_low_severity_is_skipped_without_any_salesforce_call():
     assert sf.calls == []
 
 
-def test_duplicate_subject_returns_already_exists_without_creating():
-    sf = FakeSalesforceClient(
-        [FakeSalesforceResponse(200, {"totalSize": 1, "done": True, "records": [{"Id": "500existing"}]})]
-    )
+def test_second_call_for_same_review_updates_instead_of_duplicating():
+    sf = FakeSalesforceClient([FakeSalesforceResponse(204)])
 
     raw = run(
         "r1",
@@ -157,18 +150,57 @@ def test_duplicate_subject_returns_already_exists_without_creating():
     )
     result = json.loads(raw)
 
-    assert result == {"review_id": "r1", "status": "already_exists", "case_id": "500existing"}
-    assert len(sf.calls) == 1  # only the dedup query — no POST
+    assert result == {"review_id": "r1", "status": "updated"}
+    assert len(sf.calls) == 1  # one upsert call — no separate dedup query, no POST
+
+    method, path, _ = sf.calls[0]
+    assert method == "PATCH"
+    assert path == f"/sobjects/Case/{REVIEW_ID_FIELD}/r1"
 
 
-def test_salesforce_error_on_create_raises_create_case_error():
+def test_upsert_keys_on_review_id_not_subject():
+    """Two different reviews for the same restaurant/rating must not collapse
+    into one Case — the bug this fix addresses. Each gets its own PATCH,
+    keyed by its own review_id in the URL."""
     sf = FakeSalesforceClient(
         [
-            NO_EXISTING_CASE,
+            FakeSalesforceResponse(201, {"id": "500xa", "success": True, "errors": []}),
+            FakeSalesforceResponse(201, {"id": "500xb", "success": True, "errors": []}),
+        ]
+    )
+
+    run(
+        "review-a",
+        severity="high",
+        draft_response="...",
+        reasoning="...",
+        supabase_client=FakeSupabaseClient({**REVIEW_ROW, "id": "review-a"}),
+        salesforce_client=sf,
+    )
+    run(
+        "review-b",
+        severity="high",
+        draft_response="...",
+        reasoning="...",
+        supabase_client=FakeSupabaseClient({**REVIEW_ROW, "id": "review-b"}),
+        salesforce_client=sf,
+    )
+
+    assert len(sf.calls) == 2
+    paths = [call[1] for call in sf.calls]
+    assert paths == [
+        f"/sobjects/Case/{REVIEW_ID_FIELD}/review-a",
+        f"/sobjects/Case/{REVIEW_ID_FIELD}/review-b",
+    ]
+
+
+def test_salesforce_error_on_upsert_raises_create_case_error():
+    sf = FakeSalesforceClient(
+        [
             FakeSalesforceResponse(
                 400,
                 [{"message": "Required fields are missing: [Origin]", "errorCode": "REQUIRED_FIELD_MISSING"}],
-            ),
+            )
         ]
     )
 
